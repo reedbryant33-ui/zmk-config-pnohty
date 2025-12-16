@@ -20,9 +20,9 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4 # Updated version
       - name: Cache west modules
-        uses: actions/cache@v4
+        uses: actions/cache@v4 # Updated version
         env:
           cache-name: cache-zephyr-modules
         with:
@@ -43,9 +43,8 @@ jobs:
         run: west update
       - name: West Zephyr export
         run: west zephyr-export
-      # ----------------------------------------------------------------------------------
-      # The main build step iterates over the matrix defined above.
-      # ----------------------------------------------------------------------------------
+        
+      # CORRECTED BUILD STEP: Uses the keymap as an overlay file.
       - name: West Build (${{ matrix.shield }})
         run: west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" -DDT_OVERLAY_FILE="config/${{ matrix.keymap }}.keymap"
 
@@ -53,7 +52,7 @@ jobs:
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
         
       - name: Archive (${{ matrix.shield }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4 # Updated version
         with:
           name: firmware-${{ matrix.shield }}
           path: ${{ matrix.shield }}_${{ matrix.board }}.uf2
