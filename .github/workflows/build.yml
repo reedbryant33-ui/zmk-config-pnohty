@@ -14,7 +14,7 @@ jobs:
         # Use the Nice!Nano V2 target, the most common ZMK controller.
         board: ["nice_nano_v2"] 
         # Build for the left and right halves of the Sweep V2 shield.
-        shield: ["sweep_v2_left", "sweep_v2_right"] 
+        shield: ["cradio_left", "cradio_right"] 
         # Use the keymap file you created: config/sweep.keymap
         keymap: ["sweep"]
     
