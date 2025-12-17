@@ -14,8 +14,10 @@ jobs:
         include:
           - board: waveshare_rp2040_zero
             shield: bling_left
+            keymap: bling
           - board: waveshare_rp2040_zero
             shield: bling_right
+            keymap: bling
     
     steps:
       - name: Checkout
