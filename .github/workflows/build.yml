@@ -10,9 +10,9 @@ jobs:
     name: Build
     strategy:
       matrix:
-        board: ["sparkfun_pro_micro_rp2040"]
-        shield: ["sweep_bling_left", "sweep_bling_right"]
-        keymap: ["sweep_bling"]
+        board: ["waveshare_rp2040_zero"]
+        shield: ["bling_mx_rev1_left", "bling_mx_rev1_right"]
+        keymap: ["bling"]
     
     steps:
       - name: Checkout
