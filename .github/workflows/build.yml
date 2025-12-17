@@ -11,8 +11,8 @@ jobs:
     name: Build
     strategy:
       matrix:
-        board: ["sparkfun_pro_micro_rp2040"]
-        shield: ["cradio_left", "cradio_right"]
+        board: ["nice_pro_micro_rp2040"] # Best board for your RPI-RP2 chip
+        shield: ["ferris_v02_left", "ferris_v02_right"] # Changed from cradio to ferris_v02
         keymap: ["sweep"]
     
     steps:
