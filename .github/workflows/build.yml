@@ -11,7 +11,7 @@ jobs:
     name: Build
     strategy:
       matrix:
-        board: ["pico"]
+        board: ["pro_micro_rp2040"]
         shield: ["cradio_left", "cradio_right"]
         keymap: ["sweep"]
     
