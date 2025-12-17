@@ -11,7 +11,7 @@ jobs:
     name: Build
     strategy:
       matrix:
-        board: ["nice_nano"]
+        board: ["pico"]
         shield: ["cradio_left", "cradio_right"]
         keymap: ["sweep"]
     
