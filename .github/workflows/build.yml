@@ -9,10 +9,13 @@ jobs:
       image: zmkfirmware/zmk-build-arm:stable
     name: Build
     strategy:
+      fail-fast: false
       matrix:
-        board: ["waveshare_rp2040_zero"]
-        shield: ["bling_left", "bling_right"]
-        keymap: ["bling"]
+        include:
+          - board: waveshare_rp2040_zero
+            shield: bling_left
+          - board: waveshare_rp2040_zero
+            shield: bling_right
     
     steps:
       - name: Checkout
