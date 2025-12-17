@@ -11,7 +11,7 @@ jobs:
     name: Build
     strategy:
       matrix:
-        board: ["pro_micro_rp2040"]
+        board: ["sparkfun_pro_micro_rp2040"]
         shield: ["cradio_left", "cradio_right"]
         keymap: ["sweep"]
     
