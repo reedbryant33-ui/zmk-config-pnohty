@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         board: ["waveshare_rp2040_zero"]
-        shield: ["bling_mx_rev1_left", "bling_mx_rev1_right"]
-        keymap: ["bling"]
+        shield: ["sweeq_left", "sweeq_right"]
+        keymap: ["sweeq"]
     
     steps:
       - name: Checkout
