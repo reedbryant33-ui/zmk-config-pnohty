@@ -2,10 +2,15 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+    - name: holykeebs
+      url-base: https://github.com/holykeebs
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
+    - name: zmk-holykeebs
+      remote: holykeebs
+      revision: main
   self:
     path: config
