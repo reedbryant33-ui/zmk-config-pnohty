@@ -6,9 +6,12 @@
  * Features: Colemak-DH, Nav Layer (Vim Mirror), Sym Layer (Code), Num Layer (Calc)
  */
 
+/* PNOHTY 34-Key Layout for Sweep Bling (RP2040) */
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/pointing.h>
 
 /* LAYERS */
 #define BASE 0

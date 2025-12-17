@@ -6,14 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      # FIX: Use the stable image to support 'require-prior-idle-ms'
       image: zmkfirmware/zmk-build-arm:stable
     name: Build
     strategy:
       matrix:
-        board: ["nice_pro_micro_rp2040"] # Best board for your RPI-RP2 chip
-        shield: ["ferris_v02_left", "ferris_v02_right"] # Changed from cradio to ferris_v02
-        keymap: ["sweep"]
+        board: ["sparkfun_pro_micro_rp2040"]
+        shield: ["sweep_bling_left", "sweep_bling_right"]
+        keymap: ["sweep_bling"]
     
     steps:
       - name: Checkout
@@ -41,9 +40,8 @@ jobs:
       - name: West Zephyr export
         run: west zephyr-export
 
-      # FIX: Explicitly map the shield to your custom keymap file
       - name: West Build (${{ matrix.shield }})
-        run: west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" -DDT_OVERLAY_FILE="${GITHUB_WORKSPACE}/config/${{ matrix.keymap }}.keymap" -DKCONFIG_CONF_FILE="${GITHUB_WORKSPACE}/config/cradio.conf"
+        run: west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" -DDT_OVERLAY_FILE="${GITHUB_WORKSPACE}/config/${{ matrix.keymap }}.keymap"
 
       - name: Rename zmk.uf2
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
