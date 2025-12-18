@@ -13,11 +13,11 @@ jobs:
       matrix:
         include:
           - board: waveshare_rp2040_zero
-            shield: bling_left
-            keymap: bling
+            shield: ferris_v02_left
+            keymap: pnohty
           - board: waveshare_rp2040_zero
-            shield: bling_right
-            keymap: bling
+            shield: ferris_v02_right
+            keymap: pnohty
     
     steps:
       - name: Checkout
