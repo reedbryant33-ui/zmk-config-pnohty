@@ -9,12 +9,8 @@ manifest:
       remote: zmkfirmware
       revision: main
       import: app/west.yml
-    # This project provides the PS/2 hardware driver
+    # KEEP THIS: It teaches ZMK how to speak "Trackpoint" (PS/2)
     - name: kb_zmk_ps2_mouse_trackpoint_driver
-      remote: infused-kim
-      revision: main
-    # This project provides the 'input-listener' and 'input-processors' logic
-    - name: zmk-input-behavior-listener
       remote: infused-kim
       revision: main
   self:
