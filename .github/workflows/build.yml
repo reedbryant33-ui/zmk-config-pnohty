@@ -13,10 +13,10 @@ jobs:
       matrix:
         include:
           - board: rp2040_zero
-            shield: ferris_v02_left
+            shield: bling_mx_rev1_left
             keymap: pnohty
           - board: rp2040_zero
-            shield: ferris_v02_right
+            shield: bling_mx_rev1_right
             keymap: pnohty
     
     steps:

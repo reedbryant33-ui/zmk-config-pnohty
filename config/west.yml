@@ -2,10 +2,15 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
+    - name: mjfortier
+      url-base: https://github.com/mjfortier
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
+    - name: zmk-shields
+      remote: mjfortier
+      revision: main
   self:
     path: config
