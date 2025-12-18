@@ -53,5 +53,6 @@
     /* Trackpoint Orientation/Speed Transform */
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
+        #input-processor-cells = <0>;
     };
 };
