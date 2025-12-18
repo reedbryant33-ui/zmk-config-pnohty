@@ -1,0 +1,26 @@
+#include <dt-bindings/zmk/input_transform.h>
+
+/ {
+    // 1. The hardware definition
+    trackpoint_input: trackpoint_input {
+        compatible = "zmk,input-ps2-gpio";
+        // Mapping to GP2 and GP3 on your RP2040-Zero
+        data-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        clk-gpios  = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+    };
+
+    // 2. The listener that turns signals into mouse movement
+    trackpoint_listener: trackpoint_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackpoint_input>;
+        input-processors = <&zip_xy_transform>;
+    };
+
+    // 3. Transformation (Speed/Orientation)
+    zip_xy_transform: zip_xy_transform {
+        compatible = "zmk,input-processor-transform";
+        #input-processor-cells = <0>;
+        // Start with no transform; we can add XY_SWAP or INVERT later
+        type = <INPUT_TRANSFORM_NONE>; 
+    };
+};
