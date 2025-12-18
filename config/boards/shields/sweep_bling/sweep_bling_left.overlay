@@ -1,0 +1,36 @@
+#include <dt-bindings/zmk/matrix_transform.h>
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+        // If you had a matrix transform, you'd link it here
+    };
+
+    // YOUR TRACKPOINT CODE GOES HERE (Paste the code we worked on earlier)
+    trackpoint_input: trackpoint_input {
+        compatible = "zmk,input-ps2-gpio";
+        data-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        clk-gpios  = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+    };
+
+    trackpoint_listener: trackpoint_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackpoint_input>;
+        input-processors = <&zip_xy_transform>;
+    };
+    
+    zip_xy_transform: zip_xy_transform {
+        compatible = "zmk,input-processor-transform";
+        #input-processor-cells = <0>;
+        type = <INPUT_TRANSFORM_NONE>; 
+    };
+
+    // DEFINE YOUR KEYS (This is just a dummy matrix so it compiles)
+    kscan0: kscan_0 {
+        compatible = "zmk,kscan-gpio-direct";
+        input-gpios
+            = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            ; // Add your actual key pins here later!
+    };
+};

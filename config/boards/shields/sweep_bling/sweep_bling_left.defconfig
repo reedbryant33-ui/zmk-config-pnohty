@@ -1,0 +1,10 @@
+if SHIELD_SWEEP_BLING_LEFT
+
+config ZMK_KEYBOARD_NAME
+    default "Sweep Bling"
+
+# The Left side is the Central (connects to PC/Phone)
+config ZMK_SPLIT_ROLE_CENTRAL
+    default y
+
+endif
