@@ -48,16 +48,14 @@
         compatible = "zmk,input-listener";
         device = <&trackpoint_input>;
         
-        /* Using a Scaler instead of raw transform.
-           <2 1> means Multiply by 2, Divide by 1 (2x speed).
-           If it's too fast, change to <1 1>.
-        */
+        /* <2 1> means 2x speed. <1 1> means original speed. */
         input-processors = <&zip_xy_scaler 2 1>;
     };
     
-    /* Input Scaler (Replaces the broken Transform) */
+    /* Input Scaler */
     zip_xy_scaler: zip_xy_scaler {
         compatible = "zmk,input-processor-scaler";
-        #input-processor-cells = <2>; /* Accepts 2 arguments: Multiplier & Divisor */
+        #input-processor-cells = <2>;
+        type = <0>; /* 0 = apply to both X and Y. This is the REQUIRED line. */
     };
 };
