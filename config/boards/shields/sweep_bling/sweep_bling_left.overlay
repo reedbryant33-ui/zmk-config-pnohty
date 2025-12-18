@@ -47,12 +47,17 @@
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener";
         device = <&trackpoint_input>;
-        input-processors = <&zip_xy_transform>;
+        
+        /* Using a Scaler instead of raw transform.
+           <2 1> means Multiply by 2, Divide by 1 (2x speed).
+           If it's too fast, change to <1 1>.
+        */
+        input-processors = <&zip_xy_scaler 2 1>;
     };
     
-    /* Trackpoint Orientation/Speed Transform */
-    zip_xy_transform: zip_xy_transform {
-        compatible = "zmk,input-processor-transform";
-        #input-processor-cells = <0>;
+    /* Input Scaler (Replaces the broken Transform) */
+    zip_xy_scaler: zip_xy_scaler {
+        compatible = "zmk,input-processor-scaler";
+        #input-processor-cells = <2>; /* Accepts 2 arguments: Multiplier & Divisor */
     };
 };
