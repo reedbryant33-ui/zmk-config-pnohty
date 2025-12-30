@@ -51,7 +51,8 @@ jobs:
           -DSHIELD=${{ matrix.shield }} \
           -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
           -DDT_OVERLAY_FILE="${GITHUB_WORKSPACE}/config/${{ matrix.keymap }}.keymap" \
-          -DKCONFIG_CONF_FILE="${GITHUB_WORKSPACE}/config/${{ matrix.keymap }}.conf"
+          -DCONF_FILE="${GITHUB_WORKSPACE}/config/${{ matrix.keymap }}.conf"
+          
       - name: Rename zmk.uf2
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
         
