@@ -6,13 +6,17 @@
         compatible = "zmk,keymap";
         default_layer {
             bindings = <
-                /* GP6  GP7  GP8  GP9  GP10 GP0  GP1  GP2  GP3  GP4  GP5 */
+                /* Standard Rows (Q-1) */
                 &kp Q &kp W &kp E &kp R &kp T &kp Y &kp U &kp I &kp O &kp P &kp LBKT
                 &kp A &kp S &kp D &kp F &kp G &kp H &kp J &kp K &kp L &kp SEMI &kp SQT
                 &kp Z &kp X &kp C &kp V &kp B &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp BSLH
                 &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp MINUS
-                &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F11
-                &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT &kp CARET &kp AMPS &kp ASTRK &kp LPAR &kp RPAR &kp UNDER
+                /* Test Row 4 (GP15) */ &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &kp F7 &kp F8 &kp F9 &kp F10 &kp F11
+                /* Test Row 5 (GP14) */ &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT &kp CARET &kp AMPS &kp ASTRK &kp LPAR &kp RPAR &kp UNDER
+                /* Test Row 6 (GP13) */ &kp KP_N1 &kp KP_N2 &kp KP_N3 &kp KP_N4 &kp KP_N5 &kp KP_N6 &kp KP_N7 &kp KP_N8 &kp KP_N9 &kp KP_N0 &kp KP_DOT
+                /* Test Row 7 (GP12) */ &kp INS &kp HOME &kp PG_UP &kp DEL &kp END &kp PG_DN &kp UP &kp DOWN &kp LEFT &kp RIGHT &kp K_APP
+                /* Test Row 8 (GP11) */ &kp C_PP &kp C_VOL_UP &kp C_VOL_DN &kp C_NEXT &kp C_PREV &kp C_MUTE &kp SLCK &kp PAUSE_BREAK &kp PSCRN &kp CAPS &kp SCROLLLOCK
+                /* Test Row 9 (GP2) */  &kp F12 &kp F13 &kp F14 &kp F15 &kp F16 &kp F17 &kp F18 &kp F19 &kp F20 &kp F21 &kp F22
             >;
         };
     };
