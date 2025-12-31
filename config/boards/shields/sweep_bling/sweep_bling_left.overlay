@@ -4,7 +4,7 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
-        /* These tell the system to use the USB serial port for logs */
+        /* Force the console and shell to the USB serial port */
         zephyr,console = &cdc_acm_uart0;
         zephyr,shell-uart = &cdc_acm_uart0;
     };
@@ -40,8 +40,8 @@
     };
 };
 
-/* This creates the virtual serial port needed for ls /dev/tty.usbmodem* */
-&usbd {
+/* This creates the virtual serial port for the Mac Terminal on RP2040 */
+&zephyr_udc0 {
     status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {
         compatible = "zephyr,cdc-acm-uart";
