@@ -6,11 +6,7 @@
         compatible = "zmk,keymap";
         default_layer {
             bindings = <
-                /* Row 0: QWER */ &kp Q &kp W &kp E &kp R
-                /* Row 1: ASDF */ &kp A &kp S &kp D &kp F
-                /* Row 2: ZXCV */ &kp Z &kp X &kp C &kp V
-                /* Row 3: 1234 */ &kp N1 &kp N2 &kp N3 &kp N4
-                /* Row 4: F1-F4 */ &kp F1 &kp F2 &kp F3 &kp F4
+                &kp N1 &kp N2 &kp N3 &kp N4
             >;
         };
     };
