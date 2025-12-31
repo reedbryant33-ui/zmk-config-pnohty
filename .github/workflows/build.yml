@@ -15,9 +15,9 @@ jobs:
           - board: rp2040_zero
             shield: sweep_bling_left
             keymap: pnohty
-          - board: rp2040_zero
-            shield: sweep_bling_right
-            keymap: pnohty
+          #- board: rp2040_zero
+          #  shield: sweep_bling_right
+          # keymap: pnohty
     
     steps:
       - name: Checkout
