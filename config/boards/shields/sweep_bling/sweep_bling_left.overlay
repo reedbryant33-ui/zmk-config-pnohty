@@ -25,16 +25,16 @@
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col"; 
 
-        /* Scanning these as potential horizontal shared lines */
+        /* We know GP6 is one row. Let's try 3 others to find your Top/Home rows. */
         row-gpios
-            = <&gpio0 6  GPIO_ACTIVE_HIGH>   /* Confirmed Bottom Row */
-            , <&gpio0 10 GPIO_ACTIVE_HIGH>   /* Candidate shared line */
-            , <&gpio0 9  GPIO_ACTIVE_HIGH>   /* Candidate shared line */
-            , <&gpio0 8  GPIO_ACTIVE_HIGH>   /* Candidate shared line */
-            , <&gpio0 7  GPIO_ACTIVE_HIGH>   /* Candidate shared line */
+            = <&gpio0 6  GPIO_ACTIVE_HIGH>   /* Verified Bottom Row */
+            , <&gpio0 10 GPIO_ACTIVE_HIGH>   /* Candidate 1 */
+            , <&gpio0 9  GPIO_ACTIVE_HIGH>   /* Candidate 2 */
+            , <&gpio0 8  GPIO_ACTIVE_HIGH>   /* Candidate 3 */
+            , <&gpio0 7  GPIO_ACTIVE_HIGH>   /* Candidate 4 */
             ;
 
-        /* Your confirmed vertical lines */
+        /* THESE ARE YOUR VERIFIED VERTICAL PINS */
         col-gpios
             = <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 28 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
@@ -44,7 +44,6 @@
     };
 };
 
-/* Correct nesting to ensure build passes and serial port works */
 &zephyr_udc0 {
     status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {
