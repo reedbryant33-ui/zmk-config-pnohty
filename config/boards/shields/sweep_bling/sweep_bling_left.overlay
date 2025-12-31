@@ -20,7 +20,7 @@
 
     kscan0: kscan {
         compatible = "zmk,kscan-gpio-matrix";
-        label = "KSCAN";
+        /* Removed 'label' to fix deprecation warning */
         diode-direction = "col2row";
         row-gpios
             = <&gpio0 26 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
@@ -33,24 +33,7 @@
             , <&gpio0 1  GPIO_ACTIVE_HIGH>
             , <&gpio0 2  GPIO_ACTIVE_HIGH>
             , <&gpio0 3  GPIO_ACTIVE_HIGH>
-            , <&gpio0 6  GPIO_ACTIVE_HIGH> // Skips 4 & 5 for I2C
+            , <&gpio0 6  GPIO_ACTIVE_HIGH>
             ;
-    };
-};
-
-/* Correct RP2040 I2C pinctrl for Zephyr 4.1.0 */
-&i2c0 {
-    status = "okay";
-    pinctrl-0 = <&i2c0_default>;
-    pinctrl-names = "default";
-    clock-frequency = <100000>; // Standard 100kHz for trackpoints
-};
-
-&pinctrl {
-    i2c0_default: i2c0_default {
-        group1 {
-            pinmux = <I2C0_SDA_P4>, <I2C0_SCL_P5>;
-            input-enable;
-        };
     };
 };
