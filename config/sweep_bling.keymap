@@ -6,11 +6,11 @@
         compatible = "zmk,keymap";
         default_layer {
             bindings = <
-                /* If Bottom Pinky hits GP6, it types Q. If Home Row hits GP7, it types W. */
-                &kp Q &kp W &kp E &kp R &kp T
-                &kp A &kp S &kp D &kp F &kp G
-                &kp Z &kp X &kp C &kp V &kp B
-                            &kp N1 &kp N2
+                /* GP6  GP7  GP8  GP9  GP10 GP0  GP1  GP2  GP3  GP4  GP5 */
+                &kp Q &kp W &kp E &kp R &kp T &kp Y &kp U &kp I &kp O &kp P &kp LBKT
+                &kp A &kp S &kp D &kp F &kp G &kp H &kp J &kp K &kp L &kp SEMI &kp SQT
+                &kp Z &kp X &kp C &kp V &kp B &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp BSLH
+                &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp MINUS
             >;
         };
     };
