@@ -1,13 +1,16 @@
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+
 / {
     keymap {
         compatible = "zmk,keymap";
         default_layer {
             bindings = <
-                /* Testing all intersections */
-                &kp Q &kp W &kp E &kp R &kp T &kp Y &kp U &kp I &kp O
-                &kp A &kp S &kp D &kp F &kp G &kp H &kp J &kp K &kp L
-                &kp Z &kp X &kp C &kp V &kp B &kp N &kp M &kp COMMA &kp DOT
-                            &kp N1 &kp N2 &kp N3 &kp N4 &kp N5
+                /* Row 0 */ &kp Q &kp W &kp E &kp R &kp T &kp Y
+                /* Row 1 */ &kp A &kp S &kp D &kp F &kp G &kp H
+                /* Row 2 */ &kp Z &kp X &kp C &kp V &kp B &kp N
+                /* Row 3 */ &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &kp N6
+                /* Row 4 */ &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6
             >;
         };
     };
