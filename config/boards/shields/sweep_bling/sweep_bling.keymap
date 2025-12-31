@@ -98,21 +98,19 @@
      */
     keymap {
         compatible = "zmk,keymap";
-
-        /* * LAYER 0: BASE (Colemak-DH)
-         * L_Inner_Thumb: Space
-         * L_Outer_Thumb: Backspace / NAV Layer
-         * R_Inner_Thumb: Enter
-         * R_Outer_Thumb: Space / SYM Layer
-         */
         default_layer {
             bindings = <
-            &kp Q       &kp W       &kp F       &kp P           &kp B           &kp J       &kp L       &kp U       &kp Y       &kp SEMI
-            &kp A       &lt_num NUM R &kp S     &kp T           &kp G           &kp M       &kp N       &kp E       &kp I       &kp O
-            &kp Z       &kp X       &kp C       &kp D           &kp V           &kp K       &kp H       &kp COMMA   &kp QMARK   &kp FSLH
-                                    &kp SPACE   &mo NAV         &kp ENTER       &mo SYM
+                /* Row 0: Q W E R T */
+                &kp Q &kp W &kp E &kp R &kp T
+                /* Row 1: A S D F G */
+                &kp A &kp S &kp D &kp F &kp G
+                /* Row 2: Z X C V B */
+                &kp Z &kp X &kp C &kp V &kp B
+                /* Row 3: Thumb keys 1 2 */
+                            &kp N1 &kp N2
             >;
         };
+    };
 
         /*
          * LAYER 1: NAV (Left Outer Thumb Hold)

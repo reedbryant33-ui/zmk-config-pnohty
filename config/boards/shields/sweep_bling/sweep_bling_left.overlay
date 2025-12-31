@@ -2,10 +2,8 @@
 
 / {
     chosen {
-        /* Keep kscan off to prove the serial port works first */
+        zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
-        zephyr,console = &cdc_acm_uart0;
-        zephyr,shell-uart = &cdc_acm_uart0;
     };
 
     default_transform: matrix_transform {
@@ -19,13 +17,22 @@
                             RC(3,0) RC(3,1)
         >;
     };
-};
 
-/* Ensure the USB device controller is enabled and the UART is a child of it */
-&zephyr_udc0 {
-    status = "okay";
-    cdc_acm_uart0: cdc_acm_uart0 {
-        compatible = "zephyr,cdc-acm-uart";
-        label = "CDC_ACM_0"; /* Added explicit label for macOS identification */
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-matrix";
+        diode-direction = "row2col"; 
+        row-gpios
+            = <&gpio0 29 GPIO_ACTIVE_HIGH>
+            , <&gpio0 28 GPIO_ACTIVE_HIGH>
+            , <&gpio0 27 GPIO_ACTIVE_HIGH>
+            , <&gpio0 26 GPIO_ACTIVE_HIGH>
+            ;
+        col-gpios
+            = <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 8  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            ;
     };
 };
