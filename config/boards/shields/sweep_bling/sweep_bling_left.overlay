@@ -20,11 +20,12 @@
 
     kscan0: kscan {
         compatible = "zmk,kscan-gpio-matrix";
+        /* Switching to row2col with ACTIVE_LOW to stop sticky ghosting */
         diode-direction = "row2col"; 
 
         row-gpios
-            = <&gpio0 11 GPIO_ACTIVE_HIGH> /* Test Driver 1 (Bottom Pad) */
-            , <&gpio0 2  GPIO_ACTIVE_HIGH> /* Test Driver 2 (Side GPIO) */
+            = <&gpio0 2 GPIO_ACTIVE_HIGH> /* The "6" suspect */
+            , <&gpio0 3 GPIO_ACTIVE_HIGH> /* The next neighbor */
             ;
 
         col-gpios
@@ -33,9 +34,10 @@
             , <&gpio0 8  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 3  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            , <&gpio0 22 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Adding GP22 */
+            , <&gpio0 23 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Adding GP23 */
+            , <&gpio0 24 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Adding GP24 */
+            , <&gpio0 25 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Adding GP25 */
             ;
     };
 };
