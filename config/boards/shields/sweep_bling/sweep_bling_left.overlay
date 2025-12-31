@@ -4,6 +4,7 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix-transform = &default_transform;
+        /* These point the logs to the virtual serial port */
         zephyr,console = &cdc_acm_uart0;
         zephyr,shell-uart = &cdc_acm_uart0;
     };
@@ -22,7 +23,7 @@
 
     kscan0: kscan {
         compatible = "zmk,kscan-gpio-matrix";
-        /* Switch to col2row to stop the 4-key ghosting */
+        /* col2row to stop the "4 A's" ghosting you saw earlier */
         diode-direction = "col2row"; 
         row-gpios
             = <&gpio0 29 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
@@ -38,13 +39,12 @@
             , <&gpio0 10 GPIO_ACTIVE_HIGH>
             ;
     };
+};
 
-    /* Virtual serial port node */
+/* This is the critical fix: the UART must be a child of the USB controller */
+&zephyr_udc0 {
+    status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {
         compatible = "zephyr,cdc-acm-uart";
     };
-};
-
-&zephyr_udc0 {
-    status = "okay";
 };
