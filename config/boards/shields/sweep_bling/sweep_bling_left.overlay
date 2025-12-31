@@ -23,8 +23,8 @@
         diode-direction = "row2col"; 
 
         row-gpios
-            = <&gpio0 13 GPIO_ACTIVE_HIGH> /* Test Driver 1 */
-            , <&gpio0 12 GPIO_ACTIVE_HIGH> /* Test Driver 2 */
+            = <&gpio0 11 GPIO_ACTIVE_HIGH> /* Test Driver 1 (Bottom Pad) */
+            , <&gpio0 2  GPIO_ACTIVE_HIGH> /* Test Driver 2 (Side GPIO) */
             ;
 
         col-gpios
@@ -33,7 +33,6 @@
             , <&gpio0 8  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 2  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 3  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
             , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
