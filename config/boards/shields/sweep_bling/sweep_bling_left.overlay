@@ -1,11 +1,9 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-#include <dt-bindings/zmk/input_transform.h>
 
 / {
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
-        /* FIXED: Tell Zephyr where to send the logs */
         zephyr,console = &cdc_acm_uart0;
     };
 
@@ -44,13 +42,8 @@
             ;
     };
 
-    /* FIXED: This node is required whenever ZMK_USB_LOGGING=y */
-    zephyr_udc0: &usbd {
-        status = "okay";
-        cdc_acm_uart0: cdc_acm_uart0 {
-            compatible = "zephyr,cdc-acm-uart";
-        };
+    /* CDC ACM UART for USB Logging - No board reference needed */
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
     };
-
-    /* Trackpoint remains commented out for now */
 };
