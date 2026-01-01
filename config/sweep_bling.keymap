@@ -4,12 +4,17 @@
 / {
     keymap {
         compatible = "zmk,keymap";
+
         default_layer {
             bindings = <
-                /* Row 0 (GP22) */
-                &kp Q &kp W &kp E &kp R &kp T &kp Y &kp U &kp I &kp O
-                /* Row 1 (GP23) */
-                &kp A &kp S &kp D &kp F &kp G &kp H &kp J &kp K &kp L
+                /* Top Row */
+                &kp Q &kp W &kp E &kp R &kp T    &kp Y &kp U &kp I     &kp O   &kp P
+                /* Home Row */
+                &kp A &kp S &kp D &kp F &kp G    &kp H &kp J &kp K     &kp L   &kp SEMI
+                /* Bottom Row */
+                &kp Z &kp X &kp C &kp V &kp B    &kp N &kp M &kp COMMA &kp DOT &kp SLASH
+                /* Thumbs */
+                            &kp TAB &kp LSHIFT   &kp SPACE &kp ENTER
             >;
         };
     };
