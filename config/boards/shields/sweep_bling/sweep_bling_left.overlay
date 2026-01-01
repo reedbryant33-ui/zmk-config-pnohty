@@ -36,7 +36,7 @@
             , <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 1: Home Row shared */
             , <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 2: Bottom Row shared */
             , <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 3: Thumb shared */
-            , <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 4: (Not used yet) */
+            , <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 4: (Reserved) */
             , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 5: Top Ring shared */
             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Col 6: Home Ring shared */
             ;
@@ -56,7 +56,8 @@
 
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
-        #input-processor-cells = <0>; /* FIXED: Added the # symbol */
+        /* FIXED: Property is a marker, it takes no value cells */
+        #input-processor-cells; 
         type = <0>; 
     };
 };
