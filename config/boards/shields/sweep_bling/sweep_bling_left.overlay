@@ -4,15 +4,14 @@
 / {
     chosen {
         zmk,kscan = &kscan0;
-        zmk,matrix_transform = &default_transform; [cite: 6]
+        zmk,matrix_transform = &default_transform;
     };
 
     default_transform: matrix_transform {
-        compatible = "zmk,matrix-transform"; [cite: 7]
-        columns = <10>; [cite: 7]
-        rows = <4>; [cite: 8]
+        compatible = "zmk,matrix-transform";
+        columns = <10>;
+        rows = <4>;
         map = <
-            /* Matches physical: Pinky, Ring, Middle, Index, Inner Index */
             RC(4,0) RC(3,4) RC(2,0) RC(1,0) RC(0,0)    RC(0,5) RC(1,5) RC(2,5) RC(3,5) RC(4,5)
             RC(4,1) RC(3,5) RC(2,1) RC(1,1) RC(0,1)    RC(0,6) RC(1,6) RC(2,6) RC(3,6) RC(4,6)
             RC(4,2) RC(3,2) RC(2,2) RC(1,2) RC(0,2)    RC(0,7) RC(1,7) RC(2,7) RC(3,7) RC(4,7)
@@ -21,43 +20,42 @@
     };
 
     kscan0: kscan_0 {
-        compatible = "zmk,kscan-gpio-matrix"; [cite: 12]
+        compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col"; 
         
         row-gpios
-            = <&gpio0 22 GPIO_ACTIVE_HIGH> // Row 0 (GP22)
-            , <&gpio0 26 GPIO_ACTIVE_HIGH> // Row 1 (GP26)
-            , <&gpio0 27 GPIO_ACTIVE_HIGH> // Row 2 (GP27)
-            , <&gpio0 28 GPIO_ACTIVE_HIGH> // Row 3 (GP28)
-            , <&gpio0 29 GPIO_ACTIVE_HIGH> // Row 4 (GP29)
+            = <&gpio0 22 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 26 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 27 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 28 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 29 GPIO_ACTIVE_HIGH> 
             ;
 
         col-gpios
-            = <&gpio0 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // Col 0 (GP4)
-            , <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // Col 1 (GP5)
-            , <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // Col 2 (GP6)
-            , <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // Col 3 (GP7)
-            , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // Col 4 (GP9)
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> // Col 5 (GP10)
+            = <&gpio0 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
             ;
     };
 
     trackpoint_input: trackpoint_input {
-        compatible = "zmk,input-ps2-gpio"; [cite: 16]
-        data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; [cite: 17]
-        clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; [cite: 17]
+        compatible = "zmk,input-ps2-gpio";
+        data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
     trackpoint_listener: trackpoint_listener {
-        compatible = "zmk,input-listener"; [cite: 18]
-        device = <&trackpoint_input>; [cite: 19]
-        input-processors = <&zip_xy_transform>; [cite: 19]
+        compatible = "zmk,input-listener";
+        device = <&trackpoint_input>;
+        input-processors = <&zip_xy_transform>;
     };
     
     zip_xy_transform: zip_xy_transform {
-        compatible = "zmk,input-processor-transform"; [cite: 19]
-        /* FIXED: Removed '#' prefix which was causing the build error */
-        input-processor-cells = <0>; 
+        compatible = "zmk,input-processor-transform";
+        input-processor-cells = <0>;
         type = <0>; 
     };
 };
