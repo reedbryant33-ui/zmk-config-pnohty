@@ -24,24 +24,26 @@
         diode-direction = "row2col";
         
         row-gpios
-            = <&gpio0 22 GPIO_ACTIVE_HIGH> /* Row 0: Inner Index / Right Thumb */
-            , <&gpio0 26 GPIO_ACTIVE_HIGH> /* Row 1: Index / Left Thumb */
-            , <&gpio0 27 GPIO_ACTIVE_HIGH> /* Row 2: Middle */
-            , <&gpio0 28 GPIO_ACTIVE_HIGH> /* Row 3: Ring */
-            , <&gpio0 29 GPIO_ACTIVE_HIGH> /* Row 4: Pinky */
+            = <&gpio0 22 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 26 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 27 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 28 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 29 GPIO_ACTIVE_HIGH> 
             ;
 
         col-gpios
-            = <&gpio0 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 0: Top Row shared */
-            , <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 1: Home Row shared */
-            , <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 2: Bottom Row shared */
-            , <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 3: Thumb shared */
-            , <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 4: (Reserved) */
-            , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 5: Top Ring shared */
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Col 6: Home Ring shared */
+            = <&gpio0 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  
+            , <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  
+            , <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  
+            , <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  
+            , <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  
+            , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
             ;
     };
 
+    /* TEMPORARILY DISABLED TRACKPOINT TO FIX BUILD */
+    /*
     trackpoint_input: trackpoint_input {
         compatible = "zmk,input-ps2-gpio";
         data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
@@ -56,8 +58,8 @@
 
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
-        /* FIXED: Restored numeric assignment as required by your build environment */
         #input-processor-cells = <0>; 
         type = <0>; 
     };
+    */
 };
