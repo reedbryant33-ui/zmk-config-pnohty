@@ -4,6 +4,7 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
+        zephyr,console = &cdc_acm_uart0;
     };
 
     default_transform: matrix_transform {
@@ -31,12 +32,19 @@
             ;
 
         col-gpios
-            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 0: Top */
-            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 1: Home */
-            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 2: Bottom */
-            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 3: Thumb */
-            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 4: GP9 (Top Ring) */
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 5: GP10 (Home Ring) */
+            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 0 */
+            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 1 */
+            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 2 */
+            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 3 */
+            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 4: GP9 */
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 5: GP10 */
             ;
+    };
+};
+
+&zephyr_udc0 {
+    status = "okay";
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
     };
 };
