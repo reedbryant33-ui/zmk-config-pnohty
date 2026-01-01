@@ -4,6 +4,7 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
+        /* FIXED: Use the label defined in the board files */
         zephyr,console = &cdc_acm_uart0;
     };
 
@@ -24,10 +25,10 @@
         diode-direction = "row2col";
         
         row-gpios
-            = <&gpio0 22 GPIO_ACTIVE_HIGH> /* Row 0: Inner Index / R-Thumb */
-            , <&gpio0 26 GPIO_ACTIVE_HIGH> /* Row 1: Index / L-Thumb */
+            = <&gpio0 22 GPIO_ACTIVE_HIGH> /* Row 0: Inner Index */
+            , <&gpio0 26 GPIO_ACTIVE_HIGH> /* Row 1: Index */
             , <&gpio0 27 GPIO_ACTIVE_HIGH> /* Row 2: Middle */
-            , <&gpio0 28 GPIO_ACTIVE_HIGH> /* Row 3: Ring (Working Driver) */
+            , <&gpio0 28 GPIO_ACTIVE_HIGH> /* Row 3: Ring */
             , <&gpio0 29 GPIO_ACTIVE_HIGH> /* Row 4: Pinky */
             ;
 
@@ -40,16 +41,6 @@
             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 5: GP10 (Home Ring) */
             ;
     };
-
-    /* CDC ACM UART for USB Logging */
-    cdc_acm_uart0: cdc_acm_uart0 {
-        compatible = "zephyr,cdc-acm-uart";
-    };
 };
 
-&usbd {
-    status = "okay";
-    cdc_acm_uart0: cdc_acm_uart0 {
-        compatible = "zephyr,cdc-acm-uart";
-    };
-};
+/* No need to redefine cdc_acm_uart0 here as it exists in the board files */
