@@ -56,8 +56,8 @@
 
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
-        /* FIXED: Syntax is just the property name for 0 cells */
-        #input-processor-cells; 
+        /* FIXED: Restored numeric assignment as required by your build environment */
+        #input-processor-cells = <0>; 
         type = <0>; 
     };
 };
