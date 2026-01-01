@@ -56,7 +56,7 @@
 
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
-        /* FIXED: Syntax requires the # marker without a value cell */
+        /* FIXED: Marker property, no value allowed */
         #input-processor-cells = <0>; 
         type = <0>; 
     };
