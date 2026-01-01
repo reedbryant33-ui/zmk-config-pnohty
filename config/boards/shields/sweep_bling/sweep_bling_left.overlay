@@ -4,7 +4,6 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
-        /* FIXED: Point to the nested CDC node */
         zephyr,console = &cdc_acm_uart0;
     };
 
@@ -13,8 +12,8 @@
         columns = <11>;
         rows = <5>;
         map = <
-            /* Top Row */    RC(4,0) RC(3,5) RC(2,0) RC(1,0) RC(0,0)   RC(0,5) RC(1,5) RC(2,5) RC(3,5) RC(4,5)
-            /* Home Row */   RC(4,1) RC(3,6) RC(2,1) RC(1,1) RC(0,1)   RC(0,6) RC(1,6) RC(2,6) RC(3,6) RC(4,6)
+            /* Top Row */    RC(4,0) RC(3,4) RC(2,0) RC(1,0) RC(0,0)   RC(0,5) RC(1,5) RC(2,5) RC(3,5) RC(4,5)
+            /* Home Row */   RC(4,1) RC(3,5) RC(2,1) RC(1,1) RC(0,1)   RC(0,6) RC(1,6) RC(2,6) RC(3,6) RC(4,6)
             /* Bottom Row */ RC(4,2) RC(3,2) RC(2,2) RC(1,2) RC(0,2)   RC(0,7) RC(1,7) RC(2,7) RC(3,7) RC(4,7)
             /* Thumbs */                     RC(1,3) RC(0,3)   RC(0,8) RC(1,8)
         >;
@@ -25,45 +24,29 @@
         diode-direction = "row2col";
         
         row-gpios
-            = <&gpio0 22 GPIO_ACTIVE_HIGH> /* Row 0 */
-            , <&gpio0 26 GPIO_ACTIVE_HIGH> /* Row 1 */
-            , <&gpio0 27 GPIO_ACTIVE_HIGH> /* Row 2 */
-            , <&gpio0 28 GPIO_ACTIVE_HIGH> /* Row 3 */
-            , <&gpio0 29 GPIO_ACTIVE_HIGH> /* Row 4 */
+            = <&gpio0 22 GPIO_ACTIVE_HIGH> /* Row 0: Inner Index / R-Thumb */
+            , <&gpio0 26 GPIO_ACTIVE_HIGH> /* Row 1: Index / L-Thumb */
+            , <&gpio0 27 GPIO_ACTIVE_HIGH> /* Row 2: Middle */
+            , <&gpio0 28 GPIO_ACTIVE_HIGH> /* Row 3: Ring (Working Driver) */
+            , <&gpio0 29 GPIO_ACTIVE_HIGH> /* Row 4: Pinky */
             ;
 
         col-gpios
-            = <&gpio0 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 0 */
-            , <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 1 */
-            , <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 2 */
-            , <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 3 */
-            , <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* Col 4 */
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Col 5 */
+            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 0: Top */
+            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 1: Home */
+            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 2: Bottom */
+            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 3: Thumb */
+            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 4: GP9 (Top Ring) */
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 5: GP10 (Home Ring) */
             ;
     };
 
-    /* Commented out trackpoint until matrix is verified 
-    trackpoint_input: trackpoint_input {
-        compatible = "zmk,input-ps2-gpio";
-        data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+    /* CDC ACM UART for USB Logging */
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
     };
-
-    trackpoint_listener: trackpoint_listener {
-        compatible = "zmk,input-listener";
-        device = <&trackpoint_input>;
-        input-processors = <&zip_xy_transform>;
-    };
-
-    zip_xy_transform: zip_xy_transform {
-        compatible = "zmk,input-processor-transform";
-        #input-processor-cells = <0>; 
-        type = <0>; 
-    };
-    */
 };
 
-/* FIXED: Reference the USB controller OUTSIDE the root block to avoid parse errors */
 &usbd {
     status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {
