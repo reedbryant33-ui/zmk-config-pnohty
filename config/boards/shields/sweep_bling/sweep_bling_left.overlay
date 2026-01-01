@@ -4,8 +4,6 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
-        /* FIXED: Use the label defined in the board files */
-        zephyr,console = &cdc_acm_uart0;
     };
 
     default_transform: matrix_transform {
@@ -42,5 +40,3 @@
             ;
     };
 };
-
-/* No need to redefine cdc_acm_uart0 here as it exists in the board files */
