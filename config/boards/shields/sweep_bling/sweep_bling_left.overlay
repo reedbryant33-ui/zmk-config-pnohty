@@ -48,3 +48,21 @@
         compatible = "zephyr,cdc-acm-uart";
     };
 };
+
+/* Add this to your existing overlay file */
+/ {
+    /* Trackpoint Hardware Definition */
+    trackpoint_input: trackpoint_input {
+        compatible = "zmk,input-ps2-gpio";
+        data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        /* Optional: Add reset-gpios if connected to a pin like GP2 */
+        // reset-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+    };
+
+    /* Trackpoint Logic Listener */
+    trackpoint_listener: trackpoint_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackpoint_input>;
+    };
+};
