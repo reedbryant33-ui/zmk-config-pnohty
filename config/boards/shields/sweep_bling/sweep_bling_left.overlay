@@ -42,9 +42,9 @@
     trackpoint_input: trackpoint_input {
         compatible = "gpio-ps2";
         /* Standard mapping: GP0 Clock, GP1 Data */
-        /* Added drive-strength to ensure clean signals */
-        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_DRIVE_STRENGTH_MAX)>; 
-        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_DRIVE_STRENGTH_MAX)>;
+        /* Set drive-strength to 4 for stronger signals */
+        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | (4 << 8))>; 
+        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | (4 << 8))>;
     };
 
     trackpoint_listener: trackpoint_listener {
