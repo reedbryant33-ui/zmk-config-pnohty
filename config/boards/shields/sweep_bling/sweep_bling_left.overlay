@@ -56,10 +56,11 @@
         input-processors = <&zip_xy_transform>;
     };
     
-    /* Trackpoint Orientation Transform (using literal 0 to fix parse error) */
+    /* Trackpoint Orientation Transform */
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
-        input-processor-cells = <0>;
-        type = <0>; // Literal for INPUT_TRANSFORM_NONE 
+        /* FIXED: Added # back to satisfy the compiler requirement */
+        #input-processor-cells = <1>; 
+        type = <0>; 
     };
 };
