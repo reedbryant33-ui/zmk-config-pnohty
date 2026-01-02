@@ -7,6 +7,7 @@
         zephyr,console = &cdc_acm_uart0;
     };
 
+    /* Matrix Transform logic preserved from your working b154d9f commit */
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         columns = <11>;
@@ -39,11 +40,11 @@
             ;
     };
 
-    /* * Trackpoint Hardware Definition
-     * Logic for standard PS/2 over GPIO 
+    /* * Trackpoint Hardware: 
+     * Using Pete Johanson's generic PS/2 GPIO driver
      */
     trackpoint_input: trackpoint_input {
-        compatible = "zmk,ps2-gpio";
+        compatible = "zmk,input-ps2-gpio";
         data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
         clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
