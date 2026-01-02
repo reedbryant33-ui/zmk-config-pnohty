@@ -1,12 +1,16 @@
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/zmk/input_transform.h>
 
 / {
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
-        zephyr,console = &cdc_acm_uart0;
     };
 
+    /* * Matrix Transform: 
+     * Maps your 5x6 physical grid (Left) to the 34-key logical layout.
+     * Logic preserved from your working b154d9f commit.
+     */
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         columns = <11>;
@@ -19,50 +23,53 @@
         >;
     };
 
+    /* * Kscan: 
+     * Pins GP22, 26, 27, 28, 29 as Drivers (Rows).
+     * Pins GP4, 5, 6, 7, 9, 10 as Listeners (Columns).
+     */
     kscan0: kscan_0 {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col";
-        
         row-gpios
-            = <&gpio0 22 GPIO_ACTIVE_HIGH> /* Row 0 */
-            , <&gpio0 26 GPIO_ACTIVE_HIGH> /* Row 1 */
-            , <&gpio0 27 GPIO_ACTIVE_HIGH> /* Row 2 */
-            , <&gpio0 28 GPIO_ACTIVE_HIGH> /* Row 3 (Ring Finger) */
-            , <&gpio0 29 GPIO_ACTIVE_HIGH> /* Row 4 */
+            = <&gpio0 22 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 26 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 27 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 28 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 29 GPIO_ACTIVE_HIGH> 
             ;
 
         col-gpios
-            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 0: GP4 */
-            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 1: GP5 */
-            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 2: GP6 */
-            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 3: GP7 */
-            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 4: GP9 */
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> /* Index 5: GP10 */
+            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
             ;
     };
-};
 
-&zephyr_udc0 {
-    status = "okay";
-    cdc_acm_uart0: cdc_acm_uart0 {
-        compatible = "zephyr,cdc-acm-uart";
-    };
-};
-
-/* Add this to your existing overlay file */
-/ {
-    /* Trackpoint Hardware Definition */
+    /* * Trackpoint Hardware Definition:
+     * Logic for the 861a31d module using PS/2 over GPIO.
+     */
     trackpoint_input: trackpoint_input {
         compatible = "zmk,input-ps2-gpio";
         data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
         clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        /* Optional: Add reset-gpios if connected to a pin like GP2 */
-        // reset-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
     };
 
     /* Trackpoint Logic Listener */
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener";
         device = <&trackpoint_input>;
+        input-processors = <&zip_xy_transform>;
+    };
+    
+    /* * Trackpoint Orientation Transform:
+     * Used to rotate or invert axes if the module is mounted sideways.
+     */
+    zip_xy_transform: zip_xy_transform {
+        compatible = "zmk,input-processor-transform";
+        input-processor-cells = <0>;
+        type = <INPUT_TRANSFORM_NONE>;
     };
 };
