@@ -59,8 +59,8 @@
     /* Trackpoint Orientation Transform */
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
-        /* FIXED: Added # back to satisfy the compiler requirement */
-        #input-processor-cells = <1>; 
+        /* FIXED: Set to 0 to match the call in trackpoint_listener */
+        #input-processor-cells = <0>; 
         type = <0>; 
     };
 };
