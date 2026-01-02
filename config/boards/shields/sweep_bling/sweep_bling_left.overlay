@@ -1,5 +1,12 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 
+/* * HACK: The ps2_gpio driver expects a 'port' property on the GPIO controller 
+ * (common on nRF chips but missing on RP2040). We define it here to fix the build error.
+ */
+&gpio0 {
+    port = <0>;
+};
+
 / {
     chosen {
         zmk,kscan = &kscan0;
@@ -40,13 +47,12 @@
             ;
     };
 
-    /* Trackpoint Hardware Definition */
-    /* FIXED: Updated compatible string and property names to match infused-kim driver */
+    /* Trackpoint Hardware Definition for 861a31d (Infused-Kim Driver) */
     trackpoint_input: trackpoint_input {
         compatible = "gpio-ps2";
-        /* Data Line (was data-gpios) */
+        /* Data Line (Blue/White wire usually) */
         sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
-        /* Clock Line (was clk-gpios) */
+        /* Clock Line (Green wire usually) */
         scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
