@@ -7,10 +7,7 @@
         zmk,matrix_transform = &default_transform;
     };
 
-    /* * Matrix Transform: 
-     * Maps your 5x6 physical grid (Left) to the 34-key logical layout.
-     * Logic preserved from your working b154d9f commit.
-     */
+    /* Matrix Transform logic from your working commit b154d9f */
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         columns = <11>;
@@ -23,10 +20,7 @@
         >;
     };
 
-    /* * Kscan: 
-     * Pins GP22, 26, 27, 28, 29 as Drivers (Rows).
-     * Pins GP4, 5, 6, 7, 9, 10 as Listeners (Columns).
-     */
+    /* Kscan pins from your physical wiring table */
     kscan0: kscan_0 {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col";
@@ -48,9 +42,7 @@
             ;
     };
 
-    /* * Trackpoint Hardware Definition:
-     * Logic for the 861a31d module using PS/2 over GPIO.
-     */
+    /* Trackpoint Hardware Definition for the 861a31d module */
     trackpoint_input: trackpoint_input {
         compatible = "zmk,input-ps2-gpio";
         data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
@@ -64,12 +56,10 @@
         input-processors = <&zip_xy_transform>;
     };
     
-    /* * Trackpoint Orientation Transform:
-     * Used to rotate or invert axes if the module is mounted sideways.
-     */
+    /* Trackpoint Orientation Transform (using literal 0 to fix parse error) */
     zip_xy_transform: zip_xy_transform {
         compatible = "zmk,input-processor-transform";
         input-processor-cells = <0>;
-        type = <INPUT_TRANSFORM_NONE>;
+        type = <0>; // Literal for INPUT_TRANSFORM_NONE 
     };
 };
