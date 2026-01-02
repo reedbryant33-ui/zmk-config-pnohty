@@ -4,9 +4,13 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
+        /* Required for CONFIG_ZMK_USB_LOGGING=y */
         zephyr,console = &cdc_acm_uart0;
     };
 
+    /* * Matrix Transform: 
+     * Confirmed working logic from your b154d9f commit.
+     */
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         columns = <11>;
@@ -19,6 +23,9 @@
         >;
     };
 
+    /* * Kscan: 
+     * Physical Pins GP22-GP29 (Drivers) and GP4-GP10 (Listeners).
+     */
     kscan0: kscan_0 {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col";
@@ -29,6 +36,7 @@
             , <&gpio0 28 GPIO_ACTIVE_HIGH> 
             , <&gpio0 29 GPIO_ACTIVE_HIGH> 
             ;
+
         col-gpios
             = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
             , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
@@ -39,10 +47,13 @@
             ;
     };
 
+    /* * Trackpoint Hardware: 
+     * Maps the local PS/2 driver to your Clock (GP0) and Data (GP1) pins.
+     */
     trackpoint_input: trackpoint_input {
-        compatible = "zmk,input-ps2-gpio";
-        data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
-        clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        compatible = "gpio-ps2";
+        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
     trackpoint_listener: trackpoint_listener {
@@ -51,6 +62,9 @@
     };
 };
 
+/* * USB CDC ACM Node: 
+ * Necessary to prevent build errors when USB logging is enabled.
+ */
 &zephyr_udc0 {
     status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {

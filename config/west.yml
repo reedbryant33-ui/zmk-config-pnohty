@@ -2,15 +2,13 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: caksoylar
-      url-base: https://github.com/caksoylar
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
-    - name: zmk-input-ps2-gpio
-      remote: caksoylar
-      revision: master
+    # LOCAL PATH - NO GITHUB 404 POSSIBLE
+    - name: kb_zmk_ps2_mouse_trackpoint_driver
+      path: config/drivers/kb_zmk_ps2_mouse_trackpoint_driver
   self:
     path: config
