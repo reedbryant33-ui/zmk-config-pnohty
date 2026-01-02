@@ -41,10 +41,9 @@
 
     trackpoint_input: trackpoint_input {
         compatible = "gpio-ps2";
-        /* Standard mapping: GP0 Clock, GP1 Data */
-        /* Set drive-strength to 4 for stronger signals */
-        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | (4 << 8))>; 
-        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | (4 << 8))>;
+        /* Use GPIO_OPEN_DRAIN to better simulate PS/2 hardware behavior */
+        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>; 
+        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
     };
 
     trackpoint_listener: trackpoint_listener {
