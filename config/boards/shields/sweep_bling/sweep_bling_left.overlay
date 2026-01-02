@@ -4,7 +4,6 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
-        /* REQUIRED for CONFIG_ZMK_USB_LOGGING=y */
         zephyr,console = &cdc_acm_uart0;
     };
 
@@ -42,10 +41,13 @@
     };
 
     /* Trackpoint Hardware Definition */
+    /* FIXED: Updated compatible string and property names to match infused-kim driver */
     trackpoint_input: trackpoint_input {
-        compatible = "zmk,input-ps2-gpio";
-        data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
-        clk-gpios  = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        compatible = "gpio-ps2";
+        /* Data Line (was data-gpios) */
+        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        /* Clock Line (was clk-gpios) */
+        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
     /* Trackpoint Logic Listener */
@@ -55,7 +57,6 @@
     };
 };
 
-/* REQUIRED for CONFIG_ZMK_USB_LOGGING=y */
 &zephyr_udc0 {
     status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {
