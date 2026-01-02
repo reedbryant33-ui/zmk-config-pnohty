@@ -39,9 +39,9 @@
             ;
     };
 
-    /* BADJEFF TRACKPOINT NODE */
+    /* BADJEFF TRACKPOINT */
     trackpoint_input: trackpoint_input {
-        compatible = "gpio-ps2";
+        compatible = "zmk,input-ps2-gpio";
         scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
         sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };

@@ -48,7 +48,7 @@ jobs:
           -DSHIELD=${{ matrix.shield }} \
           -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
           -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/config/drivers/zmk-ps2-driver" \
-          -DZEPHYR_ZMK_MODULES="${GITHUB_WORKSPACE}/config/drivers/zmk-ps2-driver"
+          -DCONFIG_ZMK_KCONFIG_STRICT_MODE=n
 
       - name: Rename zmk.uf2
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
