@@ -15,9 +15,6 @@ jobs:
           - board: rp2040_zero
             shield: sweep_bling_left
             keymap: pnohty
-          #- board: rp2040_zero
-          #  shield: sweep_bling_right
-          # keymap: pnohty
     
     steps:
       - name: Checkout
@@ -33,7 +30,7 @@ jobs:
             zephyr/
             bootloader/
             zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('manifest-dir/west.yml') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('config/west.yml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
@@ -49,7 +46,8 @@ jobs:
         run: |
           west build -s zmk/app -b ${{ matrix.board }} -- \
           -DSHIELD=${{ matrix.shield }} \
-          -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+          -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
+          -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/config/drivers/kb_zmk_ps2_mouse_trackpoint_driver-main"
 
       - name: Rename zmk.uf2
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
