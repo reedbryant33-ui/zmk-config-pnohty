@@ -202,8 +202,8 @@ static const struct ps2_gpio_config ps2_gpio_config = {
     .scl_gpio = GPIO_DT_SPEC_INST_GET(0, scl_gpios),
     .sda_gpio = GPIO_DT_SPEC_INST_GET(0, sda_gpios),
 
-    /*.scl_gpio_port_num = DT_PROP(DT_INST_PHANDLE(0, scl_gpios), port),*/
-    /*.sda_gpio_port_num = DT_PROP(DT_INST_PHANDLE(0, sda_gpios), port),*/
+    .scl_gpio_port_num = DT_PROP(DT_INST_PHANDLE(0, scl_gpios), port),
+    .sda_gpio_port_num = DT_PROP(DT_INST_PHANDLE(0, sda_gpios), port),
 };
 
 static struct ps2_gpio_data ps2_gpio_data = {

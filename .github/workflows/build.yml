@@ -47,7 +47,7 @@ jobs:
           west build -s zmk/app -b ${{ matrix.board }} -- \
           -DSHIELD=${{ matrix.shield }} \
           -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
-          -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/config/drivers/kb_zmk_ps2_mouse_trackpoint_driver-main"
+          -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/config/drivers/zmk-ps2-driver"
 
       - name: Rename zmk.uf2
         run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2

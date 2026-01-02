@@ -39,11 +39,11 @@
             ;
     };
 
+    /* BADJEFF TRACKPOINT NODE */
     trackpoint_input: trackpoint_input {
         compatible = "gpio-ps2";
-        /* Use GPIO_OPEN_DRAIN to better simulate PS/2 hardware behavior */
-        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>; 
-        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
+        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
     trackpoint_listener: trackpoint_listener {
