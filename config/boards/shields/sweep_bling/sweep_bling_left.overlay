@@ -41,9 +41,11 @@
 
     trackpoint_input: trackpoint_input {
         compatible = "gpio-ps2";
-        /* SWAPPED: GP1 is now SCL, GP0 is now SDA */
-        scl-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
-        sda-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        /* Use GP0 for Clock, GP1 for Data (Standard config) */
+        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
+        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        /* Force a standard 100Hz sampling rate */
+        sampling-rate = <100>;
     };
 
     trackpoint_listener: trackpoint_listener {
