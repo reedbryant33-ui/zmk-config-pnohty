@@ -2,16 +2,16 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: infused-kim
-      url-base: https://github.com/infused-kim
+    - name: badjeff
+      url-base: https://github.com/badjeff
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
-    # KEEP THIS: It teaches ZMK how to speak "Trackpoint" (PS/2)
-    - name: kb_zmk_ps2_mouse_trackpoint_driver
-      remote: infused-kim
+    # CHANGE: Switch to badjeff's driver which has better RP2040 support
+    - name: zmk-input-ps2-gpio
+      remote: badjeff
       revision: main
   self:
     path: config
