@@ -1,10 +1,11 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-/* Removed input_transform.h include as we are simplifying */
 
 / {
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
+        /* REQUIRED for CONFIG_ZMK_USB_LOGGING=y */
+        zephyr,console = &cdc_acm_uart0;
     };
 
     default_transform: matrix_transform {
@@ -51,7 +52,13 @@
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener";
         device = <&trackpoint_input>;
-        /* Removed input-processors to avoid build errors. 
-           The trackpoint will work in its raw default orientation. */
+    };
+};
+
+/* REQUIRED for CONFIG_ZMK_USB_LOGGING=y */
+&zephyr_udc0 {
+    status = "okay";
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
     };
 };
