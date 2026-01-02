@@ -1,5 +1,5 @@
 #include <dt-bindings/zmk/matrix_transform.h>
-#include <dt-bindings/zmk/input_transform.h>
+/* Removed input_transform.h include as we are simplifying */
 
 / {
     chosen {
@@ -7,7 +7,6 @@
         zmk,matrix_transform = &default_transform;
     };
 
-    /* Matrix Transform logic from your working commit b154d9f */
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
         columns = <11>;
@@ -20,7 +19,6 @@
         >;
     };
 
-    /* Kscan pins from your physical wiring table */
     kscan0: kscan_0 {
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col";
@@ -42,7 +40,7 @@
             ;
     };
 
-    /* Trackpoint Hardware Definition for the 861a31d module */
+    /* Trackpoint Hardware Definition */
     trackpoint_input: trackpoint_input {
         compatible = "zmk,input-ps2-gpio";
         data-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; 
@@ -53,14 +51,7 @@
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener";
         device = <&trackpoint_input>;
-        input-processors = <&zip_xy_transform>;
-    };
-    
-    /* Trackpoint Orientation Transform */
-    zip_xy_transform: zip_xy_transform {
-        compatible = "zmk,input-processor-transform";
-        /* FIXED: Set to 0 to match the call in trackpoint_listener */
-        #input-processor-cells = <0>; 
-        type = <0>; 
+        /* Removed input-processors to avoid build errors. 
+           The trackpoint will work in its raw default orientation. */
     };
 };
