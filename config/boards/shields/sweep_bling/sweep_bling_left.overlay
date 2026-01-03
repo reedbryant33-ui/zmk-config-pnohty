@@ -46,10 +46,15 @@
         scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
     };
 
-    /* THE DRIVER */
     trackpoint_driver: trackpoint_driver {
         compatible = "zmk,input-mouse-ps2";
         ps2-device = <&trackpoint_bus>;
+        
+        /* Tuning Settings */
+        tp-sensitivity = <200>;  /* range 0-255, higher is faster */
+        tp-neg-inertia = <5>;    /* range 0-255, helps with small movements */
+        
+        tp-press-to-select;
     };
 
     /* THE LISTENER: We need this back! */
