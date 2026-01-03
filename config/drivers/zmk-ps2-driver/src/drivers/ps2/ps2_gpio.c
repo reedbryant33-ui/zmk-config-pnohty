@@ -50,8 +50,9 @@ LOG_MODULE_REGISTER(ps2_gpio);
  * PS/2 Timings
  */
 
-#define PS2_GPIO_TIMING_SCL_CYCLE_MIN 60
-#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 100
+// PATCH: Relaxed timing for stubborn trackpoints
+#define PS2_GPIO_TIMING_SCL_CYCLE_MIN 10   // Allow very fast clocks
+#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  // Allow very slow clocks (5x longer wait)
 #define PS2_GPIO_TIMING_SCL_INHIBITION_MIN 100
 #define PS2_GPIO_TIMING_SCL_INHIBITION (3 * PS2_GPIO_TIMING_SCL_INHIBITION_MIN)
 #define PS2_GPIO_TIMING_SCL_INHIBITION_TIMER_DELAY_MAX 1000
