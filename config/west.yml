@@ -7,5 +7,8 @@ manifest:
       remote: zmkfirmware
       revision: main
       import: app/west.yml
+    # ADD THIS:
+    - name: zmk-ps2-driver
+      path: drivers/zmk-ps2-driver
   self:
     path: config
