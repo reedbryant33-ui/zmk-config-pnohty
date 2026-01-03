@@ -4,7 +4,7 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Build
     strategy:
       fail-fast: false
@@ -34,27 +34,24 @@ jobs:
             ${{ runner.os }}-
 
       - name: West Init
-        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
+        uses: zmkfirmware/zmk-build-action@v2
         with:
           args: init -l config
 
       - name: West Update
-        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
+        uses: zmkfirmware/zmk-build-action@v2
         with:
           args: update
 
       - name: West Config
-        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
+        uses: zmkfirmware/zmk-build-action@v2
         with:
           args: config zephyr.base-prefer configfile
 
       - name: West Build
-        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
+        uses: zmkfirmware/zmk-build-action@v2
         with:
-          args: build -s zmk/app -b ${{ matrix.board }} -- 
-            -DSHIELD=${{ matrix.shield }} 
-            -DZMK_CONFIG="${{ github.workspace }}/config" 
-            -DZMK_EXTRA_MODULES="${{ github.workspace }}/config/drivers/zmk-ps2-driver"
+          args: build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${{ github.workspace }}/config" -DZMK_EXTRA_MODULES="${{ github.workspace }}/config/drivers/zmk-ps2-driver"
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
