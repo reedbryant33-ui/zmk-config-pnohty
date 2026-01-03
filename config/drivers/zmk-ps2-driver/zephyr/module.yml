@@ -1,5 +1,0 @@
-build:
-  cmake: ..
-  kconfig: ../src/drivers/Kconfig
-  settings:
-    dts_root: ..

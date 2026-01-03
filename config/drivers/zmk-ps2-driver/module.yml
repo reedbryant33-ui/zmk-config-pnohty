@@ -1,0 +1,6 @@
+# /config/drivers/zmk-ps2-driver/module.yml
+build:
+  cmake: .
+  kconfig: src/drivers/Kconfig
+  settings:
+    dts_root: .
