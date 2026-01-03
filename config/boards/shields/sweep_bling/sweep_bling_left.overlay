@@ -39,11 +39,12 @@
             ;
     };
 
-    /* TEST 3: Swapping 2 and 3 + Ensuring Pull-Ups */
+    /* TEST 4: Pins 2/3 with Open Drain (The "Polite" Mode) */
     trackpoint_bus: trackpoint_bus {
         compatible = "gpio-ps2";
-        sda-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        scl-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        /* Note: We are back to 2 and 3, which showed signs of life */
+        sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
+        scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
     };
 
     trackpoint_driver: trackpoint_driver {
