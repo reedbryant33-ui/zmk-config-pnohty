@@ -49,11 +49,16 @@
     trackpoint_driver: trackpoint_driver {
         compatible = "zmk,input-mouse-ps2";
         ps2-device = <&trackpoint_bus>;
+
+        /* SENSITIVITY MAX: Compensate for dropped packets */
+        tp-sensitivity = <240>;   /* Range 0-255. Default 128. */
         
-        /* Tuning Settings */
-        tp-sensitivity = <200>;  /* range 0-255, higher is faster */
-        tp-neg-inertia = <5>;    /* range 0-255, helps with small movements */
+        /* INERTIA OFF: Register even the smallest twitch immediately */
+        tp-neg-inertia = <0>;     /* Default is 6. 0 = most responsive. */
         
+        /* SPEED BOOST: Accelerate faster */
+        tp-val6-upper-speed = <250>; 
+
         tp-press-to-select;
     };
 
