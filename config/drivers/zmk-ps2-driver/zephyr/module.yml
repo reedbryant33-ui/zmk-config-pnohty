@@ -1,6 +1,5 @@
-# /config/drivers/zmk-ps2-driver/zephyr/module.yml
 build:
-  cmake: .
-  kconfig: src/drivers/Kconfig
+  cmake: ..
+  kconfig: ../src/drivers/Kconfig
   settings:
-    dts_root: .
+    dts_root: ..
