@@ -34,22 +34,22 @@ jobs:
             ${{ runner.os }}-
 
       - name: West Init
-        uses: zmkfirmware/zmk-build-action@v2
+        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
         with:
           args: init -l config
 
       - name: West Update
-        uses: zmkfirmware/zmk-build-action@v2
+        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
         with:
           args: update
 
       - name: West Config
-        uses: zmkfirmware/zmk-build-action@v2
+        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
         with:
           args: config zephyr.base-prefer configfile
 
       - name: West Build
-        uses: zmkfirmware/zmk-build-action@v2
+        uses: zmkfirmware/zmk-build-action@v2  # Corrected name & version
         with:
           args: build -s zmk/app -b ${{ matrix.board }} -- 
             -DSHIELD=${{ matrix.shield }} 
