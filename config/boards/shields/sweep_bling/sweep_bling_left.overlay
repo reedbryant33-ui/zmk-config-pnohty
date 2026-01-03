@@ -57,12 +57,6 @@
     };
 };
 
-/* * CRITICAL: High-priority interrupt for PS/2 timing 
- * Required for GPIO bit-banging drivers to function without stuttering.
- */
-&gpiote {
-    interrupts = < 0x6 0 >;
-};
 
 &zephyr_udc0 {
     status = "okay";
