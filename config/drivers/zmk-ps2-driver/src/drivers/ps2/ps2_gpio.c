@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2019 Intel Corporation
- *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -16,27 +15,18 @@
 #define LOG_LEVEL CONFIG_PS2_LOG_LEVEL
 LOG_MODULE_REGISTER(ps2_gpio);
 
-/*
- * Settings
- */
-
+/* Settings */
 #define PS2_GPIO_WRITE_MAX_RETRY 5
 #define PS2_GPIO_READ_MAX_RETRY 3
-
 #define PS2_GPIO_DATA_QUEUE_SIZE 100
 
-// BOOSTED: Cooperative priority (-1) to ensure the CPU doesn't miss pulses
+// BOOSTED PRIORITY: Ensures RP2040 doesn't miss fast bits
 #define PS2_GPIO_WORK_QUEUE_PRIORITY -1
 #define PS2_GPIO_WORK_QUEUE_STACK_SIZE 1024
-
-// Custom queue for calling the zephyr ps/2 callback.
 #define PS2_GPIO_WORK_QUEUE_CB_PRIORITY 2
 #define PS2_GPIO_WORK_QUEUE_CB_STACK_SIZE 1024
 
-/*
- * PS/2 Defines
- */
-
+/* PS/2 Defines */
 #define PS2_GPIO_POS_START 0
 #define PS2_GPIO_POS_PARITY 9
 #define PS2_GPIO_POS_STOP 10
@@ -46,30 +36,18 @@ LOG_MODULE_REGISTER(ps2_gpio);
 #define PS2_GPIO_RESP_RESEND 0xfe
 #define PS2_GPIO_RESP_FAILURE 0xfc
 
-/*
- * PS/2 Timings
- */
-
-// PATCH: Relaxed timing for stubborn trackpoints
+/* PS/2 Timings - RELAXED */
 #define PS2_GPIO_TIMING_SCL_CYCLE_MIN 10   
-#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  
+#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  // Tolerant of slow trackpoints
 #define PS2_GPIO_TIMING_SCL_INHIBITION_MIN 100
 #define PS2_GPIO_TIMING_SCL_INHIBITION (3 * PS2_GPIO_TIMING_SCL_INHIBITION_MIN)
 #define PS2_GPIO_TIMING_SCL_INHIBITION_TIMER_DELAY_MAX 1000
 #define PS2_GPIO_TIMING_SCL_INHIBITION_RESP_MAX 10000
 
-#define PS2_GPIO_TIMING_WRITE_MAX_TIME                                                             \
-    (PS2_GPIO_TIMING_SCL_INHIBITION + PS2_GPIO_TIMING_SCL_INHIBITION_TIMER_DELAY_MAX +             \
-     PS2_GPIO_TIMING_SCL_INHIBITION_RESP_MAX + 11 * PS2_GPIO_TIMING_SCL_CYCLE_MAX +                \
-     2 * PS2_GPIO_TIMING_SCL_CYCLE_MAX)
+#define PS2_GPIO_TIMING_WRITE_MAX_TIME (PS2_GPIO_TIMING_SCL_INHIBITION + PS2_GPIO_TIMING_SCL_INHIBITION_TIMER_DELAY_MAX + PS2_GPIO_TIMING_SCL_INHIBITION_RESP_MAX + 11 * PS2_GPIO_TIMING_SCL_CYCLE_MAX + 2 * PS2_GPIO_TIMING_SCL_CYCLE_MAX)
+#define PS2_GPIO_TIMING_READ_MAX_TIME (11 * PS2_GPIO_TIMING_SCL_CYCLE_MAX + 2 * PS2_GPIO_TIMING_SCL_CYCLE_MAX)
 
-#define PS2_GPIO_TIMING_READ_MAX_TIME                                                              \
-    (11 * PS2_GPIO_TIMING_SCL_CYCLE_MAX + 2 * PS2_GPIO_TIMING_SCL_CYCLE_MAX)
-
-/*
- * Driver Defines
- */
-
+/* Driver Defines */
 #define PS2_GPIO_TIMEOUT_READ K_SECONDS(2)
 #define PS2_GPIO_TIMEOUT_WRITE_BLOCKING K_USEC(PS2_GPIO_TIMING_WRITE_MAX_TIME)
 #define PS2_GPIO_TIMEOUT_WRITE_AWAIT_RESPONSE K_MSEC(300)
@@ -78,10 +56,7 @@ LOG_MODULE_REGISTER(ps2_gpio);
 #define PS2_GPIO_TIMEOUT_WRITE_SCL_START K_USEC(PS2_GPIO_TIMING_SCL_INHIBITION_RESP_MAX)
 #define PS2_GPIO_WRITE_INHIBIT_SLC_DURATION K_USEC(PS2_GPIO_TIMING_SCL_INHIBITION)
 
-/*
- * Global Variables
- */
-
+/* Global Variables */
 typedef enum { PS2_GPIO_MODE_READ, PS2_GPIO_MODE_WRITE } ps2_gpio_mode;
 
 typedef enum {
@@ -109,6 +84,9 @@ struct ps2_gpio_data {
     struct k_work callback_work;
     uint8_t callback_byte;
     ps2_callback_t callback_isr;
+    
+    // Tracks if the current packet is valid
+    bool current_packet_valid; 
 
 #if IS_ENABLED(CONFIG_PS2_GPIO_ENABLE_PS2_RESEND_CALLBACK)
     ps2_resend_callback_t resend_callback_isr;
@@ -146,6 +124,7 @@ static const struct ps2_gpio_config ps2_gpio_config = {
 static struct ps2_gpio_data ps2_gpio_data = {
     .callback_byte = 0x0,
     .callback_isr = NULL,
+    .current_packet_valid = true,
 #if IS_ENABLED(CONFIG_PS2_GPIO_ENABLE_PS2_RESEND_CALLBACK)
     .resend_callback_isr = NULL,
 #endif 
@@ -233,13 +212,12 @@ void ps2_gpio_read_finish() {
     struct ps2_gpio_data *data = &ps2_gpio_data;
     data->cur_read_pos = PS2_GPIO_POS_START;
     data->cur_read_byte = 0x0;
+    data->current_packet_valid = true; // Reset valid flag for next packet
     k_work_cancel_delayable(&data->read_scl_timout);
 }
 
 void ps2_gpio_read_abort(bool should_resend, char *reason) {
-    struct ps2_gpio_data *data = &ps2_gpio_data;
-    // STABILITY: Don't spam LOG_ERR on every jitter, only on real timeouts
-    // if (should_resend) LOG_ERR("Aborting read: %s", reason);
+    // STABILITY: Never abort the whole driver, just finish this read
     ps2_gpio_read_finish();
 }
 
@@ -250,6 +228,13 @@ void ps2_gpio_data_queue_empty() {
 
 void ps2_gpio_data_queue_add(uint8_t byte) {
     struct ps2_gpio_data *data = &ps2_gpio_data;
+    
+    // SMART FILTER: If the hardware detected a parity error, do NOT send this byte.
+    // This prevents "random clicks" from corrupted data.
+    if (!data->current_packet_valid) {
+        return; 
+    }
+
     struct ps2_gpio_data_queue_item queue_data = { .byte = byte };
     if (k_msgq_put(&data->data_queue, &queue_data, K_NO_WAIT) != 0) {
         k_msgq_get(&data->data_queue, &queue_data, K_NO_WAIT); // Drop oldest
@@ -265,15 +250,20 @@ void ps2_gpio_read_callback_work_handler(struct k_work *work) {
 void ps2_gpio_read_process_received_byte(uint8_t byte) {
     struct ps2_gpio_data *data = &ps2_gpio_data;
     ps2_gpio_read_finish();
+    
     if (data->write_awaits_resp) {
         data->write_awaits_resp_byte = byte;
         data->write_awaits_resp = false;
         k_sem_give(&data->write_awaits_resp_sem);
         if (byte == PS2_GPIO_RESP_ACK || byte == PS2_GPIO_RESP_RESEND || byte == PS2_GPIO_RESP_FAILURE) return;
     }
+    
     if (data->callback_isr && data->callback_enabled) {
         data->callback_byte = byte;
-        k_work_submit_to_queue(&ps2_gpio_work_queue_cb, &data->callback_work);
+        // SMART FILTER: Only submit callback if packet was valid
+        if (data->current_packet_valid) {
+             k_work_submit_to_queue(&ps2_gpio_work_queue_cb, &data->callback_work);
+        }
     } else {
         ps2_gpio_data_queue_add(byte);
     }
@@ -286,15 +276,23 @@ void ps2_gpio_read_scl_timeout(struct k_work *item) {
 void ps2_gpio_read_interrupt_handler() {
     struct ps2_gpio_data *data = &ps2_gpio_data;
     int sda_val = ps2_gpio_get_sda();
+    
     if (data->cur_read_pos == PS2_GPIO_POS_START) {
-        if (sda_val != 0) { ps2_gpio_read_abort(false, "start bit"); return; }
+        if (sda_val != 0) { 
+            // Bad start bit, ignore this packet
+            data->current_packet_valid = false;
+        }
     } else if (data->cur_read_pos < PS2_GPIO_POS_PARITY) {
         PS2_GPIO_SET_BIT(data->cur_read_byte, sda_val, (data->cur_read_pos - 1));
     } else if (data->cur_read_pos == PS2_GPIO_POS_PARITY) {
-        // STABILITY: Ignore parity errors to prevent jumpy reset loops
-        /* if (ps2_gpio_get_byte_parity(data->cur_read_byte) != sda_val) { ps2_gpio_read_abort(true, "parity"); return; } */
+        // SMART FILTER: If parity fails, mark invalid but DON'T CRASH
+        if (ps2_gpio_get_byte_parity(data->cur_read_byte) != sda_val) { 
+             data->current_packet_valid = false;
+        }
     } else if (data->cur_read_pos == PS2_GPIO_POS_STOP) {
-        // STABILITY: If we got this far, just accept the byte
+        if (sda_val != 1) { 
+             data->current_packet_valid = false;
+        }
         ps2_gpio_read_process_received_byte(data->cur_read_byte);
         return;
     }
@@ -439,10 +437,8 @@ static int ps2_gpio_init(const struct device *dev) {
     k_msgq_init(&data->data_queue, data->data_queue_buffer, sizeof(struct ps2_gpio_data_queue_item), PS2_GPIO_DATA_QUEUE_SIZE);
     k_sem_init(&data->write_lock, 1, 1);
     k_sem_init(&data->write_awaits_resp_sem, 0, 1);
-    
     k_work_queue_start(&ps2_gpio_work_queue, ps2_gpio_work_queue_stack_area, K_THREAD_STACK_SIZEOF(ps2_gpio_work_queue_stack_area), PS2_GPIO_WORK_QUEUE_PRIORITY, NULL);
     k_work_queue_start(&ps2_gpio_work_queue_cb, ps2_gpio_work_queue_cb_stack_area, K_THREAD_STACK_SIZEOF(ps2_gpio_work_queue_cb_stack_area), PS2_GPIO_WORK_QUEUE_CB_PRIORITY, NULL);
-    
     k_work_init_delayable(&data->read_scl_timout, ps2_gpio_read_scl_timeout);
     k_work_init_delayable(&data->write_scl_timout, ps2_gpio_write_scl_timeout);
     k_work_init_delayable(&data->write_inhibition_wait, ps2_gpio_write_inhibition_wait);
