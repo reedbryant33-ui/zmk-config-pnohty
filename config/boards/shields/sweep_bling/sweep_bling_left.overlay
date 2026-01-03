@@ -50,16 +50,15 @@
         compatible = "zmk,input-mouse-ps2";
         ps2-device = <&trackpoint_bus>;
 
-        /* SENSITIVITY MAX: Compensate for dropped packets */
-        tp-sensitivity = <240>;   /* Range 0-255. Default 128. */
+        /* * SAFE MODE: Commenting out ALL tuning commands. 
+         * Sending commands seems to crash your specific trackpoint module.
+         */
+        // tp-sensitivity = <200>;
+        // tp-neg-inertia = <5>;
+        // tp-val6-upper-speed = <250>;
+        // tp-press-to-select; 
         
-        /* INERTIA OFF: Register even the smallest twitch immediately */
-        tp-neg-inertia = <0>;     /* Default is 6. 0 = most responsive. */
-        
-        /* SPEED BOOST: Accelerate faster */
-        tp-val6-upper-speed = <250>; 
-
-        tp-press-to-select;
+        /* Just tell ZMK to perform the Power-On-Reset and then listen */
     };
 
     /* THE LISTENER: We need this back! */
