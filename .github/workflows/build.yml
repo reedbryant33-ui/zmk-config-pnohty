@@ -5,7 +5,6 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-    # THIS is the fix. We use the official ZMK docker image directly.
     container:
       image: zmkfirmware/zmk-build-arm:stable
 
@@ -19,35 +18,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache west modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-zephyr-modules
-        with:
-          path: |
-            modules/
-            tools/
-            zephyr/
-            bootloader/
-            zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('config/west.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
       - name: West Init
         run: west init -l config
 
       - name: West Update
         run: west update
 
-      - name: West Config
-        run: west config zephyr.base-prefer configfile
+      - name: West Zephyr Export
+        run: west zephyr-export
 
       - name: West Build
         run: |
-          west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${{ github.workspace }}/config" -DZMK_EXTRA_MODULES="${{ github.workspace }}/config/drivers/zmk-ps2-driver"
+          west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="$GITHUB_WORKSPACE/config" -DZMK_EXTRA_MODULES="$GITHUB_WORKSPACE/config/drivers/zmk-ps2-driver"
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
