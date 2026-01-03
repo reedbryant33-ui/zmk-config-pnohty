@@ -53,6 +53,12 @@
         /* We'll add this just in case the trackpoint is waiting for a command */
         sampling-rate = <100>;
     };
+
+    /* THE LISTENER: Bridges the driver to the OS cursor */
+    trackpoint_listener: trackpoint_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackpoint_driver>;
+    };
 };
 
 &zephyr_udc0 {
