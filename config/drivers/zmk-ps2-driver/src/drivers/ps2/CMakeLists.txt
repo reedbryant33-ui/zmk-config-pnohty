@@ -1,5 +1,8 @@
-# Copyright (c) 2023 The ZMK Contributors
-# SPDX-License-Identifier: MIT
+# /config/drivers/zmk-ps2-driver/src/drivers/ps2/CMakeLists.txt
 
-target_sources_ifdef(CONFIG_PS2_GPIO app PRIVATE ps2_gpio.c)
-target_sources_ifdef(CONFIG_PS2_UART app PRIVATE ps2_uart.c)
+# Create a library for this driver
+zephyr_library()
+
+# Add sources to the library if the corresponding Kconfig is enabled
+zephyr_library_sources_ifdef(CONFIG_PS2_GPIO ps2_gpio.c)
+zephyr_library_sources_ifdef(CONFIG_PS2_UART ps2_uart.c)
