@@ -60,3 +60,10 @@
         compatible = "zephyr,cdc-acm-uart";
     };
 };
+
+trackpoint_driver: trackpoint_driver {
+    compatible = "zmk,input-mouse-ps2";
+    ps2-device = <&trackpoint_bus>;
+    tp-sensitivity = <128>;       // Default is 128, increase for more speed
+    tp-press-to-select;           // Enables clicking by tapping the stick
+};
