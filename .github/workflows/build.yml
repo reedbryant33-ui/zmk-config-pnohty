@@ -1,24 +1,21 @@
-on: [push, pull_request, workflow_dispatch]
-
 name: Build
+
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: zmkfirmware/zmk-build-arm:stable
     name: Build
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - board: rp2040_zero
-            shield: sweep_bling_left
-            keymap: pnohty
-    
+        board: [rp2040_zero]
+        shield: [sweep_bling_left]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Cache west modules
         uses: actions/cache@v4
         env:
@@ -35,26 +32,32 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
       - name: West Init
-        run: west init -l config
+        uses: zmkfirmware/zephyr-action@v1
+        with:
+          args: init -l config
+
       - name: West Update
-        run: west update
-      - name: West Zephyr export
-        run: west zephyr-export
+        uses: zmkfirmware/zephyr-action@v1
+        with:
+          args: update
 
-      - name: West Build (${{ matrix.shield }})
-        run: |
-          west build -s zmk/app -b ${{ matrix.board }} -- \
-          -DSHIELD=${{ matrix.shield }} \
-          -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" \
-          -DZMK_EXTRA_MODULES="${GITHUB_WORKSPACE}/config/drivers/zmk-ps2-driver" \
-          -DCONFIG_ZMK_KCONFIG_STRICT_MODE=n
+      - name: West Config
+        uses: zmkfirmware/zephyr-action@v1
+        with:
+          args: config zephyr.base-prefer configfile
 
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 ${{ matrix.shield }}_${{ matrix.board }}.uf2
-        
-      - name: Archive (${{ matrix.shield }})
+      - name: West Build
+        uses: zmkfirmware/zephyr-action@v1
+        with:
+          args: build -s zmk/app -b ${{ matrix.board }} -- 
+            -DSHIELD=${{ matrix.shield }} 
+            -DZMK_CONFIG="${{ github.workspace }}/config" 
+            -DZMK_EXTRA_MODULES="${{ github.workspace }}/config/drivers/zmk-ps2-driver"
+
+      - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ matrix.shield }}
-          path: ${{ matrix.shield }}_${{ matrix.board }}.uf2
+          name: '${{ matrix.board }}-${{ matrix.shield }}-zmk'
+          path: build/zephyr/zmk.uf2
