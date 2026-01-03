@@ -39,26 +39,25 @@
             ;
     };
 
-    /* TEST 4: Pins 2/3 with Open Drain (The "Polite" Mode) */
+    /* THE BUS */
     trackpoint_bus: trackpoint_bus {
         compatible = "gpio-ps2";
-        /* Note: We are back to 2 and 3, which showed signs of life */
         sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
         scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
     };
 
+    /* THE DRIVER */
     trackpoint_driver: trackpoint_driver {
         compatible = "zmk,input-mouse-ps2";
         ps2-device = <&trackpoint_bus>;
-        /* We'll add this just in case the trackpoint is waiting for a command */
-        sampling-rate = <100>;
     };
 
-    /* THE LISTENER: Bridges the driver to the OS cursor */
+    /* THE LISTENER: Bridges the driver to the OS cursor 
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener";
         device = <&trackpoint_driver>;
     };
+    */
 };
 
 &zephyr_udc0 {
