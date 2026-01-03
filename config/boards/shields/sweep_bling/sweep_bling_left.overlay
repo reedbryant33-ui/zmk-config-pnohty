@@ -23,23 +23,23 @@
         compatible = "zmk,kscan-gpio-matrix";
         diode-direction = "row2col";
         row-gpios
-            = <&gpio0 22 GPIO_ACTIVE_HIGH>
-            , <&gpio0 26 GPIO_ACTIVE_HIGH>
-            , <&gpio0 27 GPIO_ACTIVE_HIGH>
-            , <&gpio0 28 GPIO_ACTIVE_HIGH>
-            , <&gpio0 29 GPIO_ACTIVE_HIGH>
+            = <&gpio0 22 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 26 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 27 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 28 GPIO_ACTIVE_HIGH> 
+            , <&gpio0 29 GPIO_ACTIVE_HIGH> 
             ;
         col-gpios
-            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
-            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
+            = <&gpio0 4  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 5  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 7  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 9  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
+            , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
             ;
     };
 
-    /* THE BUS */
+    /* THE BUS: Standard Pro Micro I2C Pins (2/3) */
     trackpoint_bus: trackpoint_bus {
         compatible = "gpio-ps2";
         sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
@@ -52,12 +52,11 @@
         ps2-device = <&trackpoint_bus>;
     };
 
-    /* THE LISTENER: Bridges the driver to the OS cursor 
+    /* THE LISTENER: We need this back! */
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener";
         device = <&trackpoint_driver>;
     };
-    */
 };
 
 &zephyr_udc0 {
