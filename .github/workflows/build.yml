@@ -4,8 +4,11 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-    name: Build
+    runs-on: ubuntu-latest
+    # THIS is the fix. We use the official ZMK docker image directly.
+    container:
+      image: zmkfirmware/zmk-build-arm:stable
+
     strategy:
       fail-fast: false
       matrix:
@@ -34,24 +37,17 @@ jobs:
             ${{ runner.os }}-
 
       - name: West Init
-        uses: zmkfirmware/zmk-build-action@v2
-        with:
-          args: init -l config
+        run: west init -l config
 
       - name: West Update
-        uses: zmkfirmware/zmk-build-action@v2
-        with:
-          args: update
+        run: west update
 
       - name: West Config
-        uses: zmkfirmware/zmk-build-action@v2
-        with:
-          args: config zephyr.base-prefer configfile
+        run: west config zephyr.base-prefer configfile
 
       - name: West Build
-        uses: zmkfirmware/zmk-build-action@v2
-        with:
-          args: build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${{ github.workspace }}/config" -DZMK_EXTRA_MODULES="${{ github.workspace }}/config/drivers/zmk-ps2-driver"
+        run: |
+          west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="${{ github.workspace }}/config" -DZMK_EXTRA_MODULES="${{ github.workspace }}/config/drivers/zmk-ps2-driver"
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
