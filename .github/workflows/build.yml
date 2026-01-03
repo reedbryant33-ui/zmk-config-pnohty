@@ -27,6 +27,11 @@ jobs:
       - name: West Zephyr Export
         run: west zephyr-export
 
+      - name: Debug - List Driver Files
+        run: |
+          echo "Checking driver directory..."
+          ls -R $GITHUB_WORKSPACE/config/drivers
+          
       - name: West Build
         run: |
           west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="$GITHUB_WORKSPACE/config" -DZMK_EXTRA_MODULES="$GITHUB_WORKSPACE/config/drivers/zmk-ps2-driver"
