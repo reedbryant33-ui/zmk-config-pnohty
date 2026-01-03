@@ -39,24 +39,21 @@
             ;
     };
 
-    /* * TRACKPOINT HARDWARE 
-     * The 'compatible' must match DT_COMPAT_PS2_GPIO from Kconfig.gpio
+    /* * SWAPPED PINS TEST 
+     * Previous: SDA=1, SCL=0
+     * New:      SDA=0, SCL=1
      */
     trackpoint_input: trackpoint_input {
         compatible = "gpio-ps2";
-        sda-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        scl-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        sda-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        scl-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
-    /* * TRACKPOINT LISTENER
-     * The 'compatible' must match the filename zmk,input-listener-ps2.yaml
-     */
     trackpoint_listener: trackpoint_listener {
         compatible = "zmk,input-listener-ps2";
         device = <&trackpoint_input>;
     };
 };
-
 
 &zephyr_udc0 {
     status = "okay";
