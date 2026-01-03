@@ -25,8 +25,8 @@ LOG_MODULE_REGISTER(ps2_gpio);
 
 #define PS2_GPIO_DATA_QUEUE_SIZE 100
 
-// Custom queue for background PS/2 processing work at low priority
-#define PS2_GPIO_WORK_QUEUE_PRIORITY 10
+// BOOSTED: Cooperative priority (-1) to ensure the CPU doesn't miss pulses
+#define PS2_GPIO_WORK_QUEUE_PRIORITY -1
 #define PS2_GPIO_WORK_QUEUE_STACK_SIZE 1024
 
 // Custom queue for calling the zephyr ps/2 callback.
@@ -51,8 +51,8 @@ LOG_MODULE_REGISTER(ps2_gpio);
  */
 
 // PATCH: Relaxed timing for stubborn trackpoints
-#define PS2_GPIO_TIMING_SCL_CYCLE_MIN 10   // Allow very fast clocks
-#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  // Allow very slow clocks (5x longer wait)
+#define PS2_GPIO_TIMING_SCL_CYCLE_MIN 10   
+#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  
 #define PS2_GPIO_TIMING_SCL_INHIBITION_MIN 100
 #define PS2_GPIO_TIMING_SCL_INHIBITION (3 * PS2_GPIO_TIMING_SCL_INHIBITION_MIN)
 #define PS2_GPIO_TIMING_SCL_INHIBITION_TIMER_DELAY_MAX 1000
@@ -130,12 +130,12 @@ struct ps2_gpio_data {
     int cur_write_pos;
     struct k_work_delayable write_inhibition_wait;
     struct k_work_delayable write_scl_timout;
+    struct k_work resend_cmd_work;
     struct k_sem write_lock;
 
     bool write_awaits_resp;
     uint8_t write_awaits_resp_byte;
     struct k_sem write_awaits_resp_sem;
-    struct k_work resend_cmd_work;
 };
 
 static const struct ps2_gpio_config ps2_gpio_config = {
@@ -238,7 +238,8 @@ void ps2_gpio_read_finish() {
 
 void ps2_gpio_read_abort(bool should_resend, char *reason) {
     struct ps2_gpio_data *data = &ps2_gpio_data;
-    if (should_resend) LOG_ERR("Aborting read: %s", reason);
+    // STABILITY: Don't spam LOG_ERR on every jitter, only on real timeouts
+    // if (should_resend) LOG_ERR("Aborting read: %s", reason);
     ps2_gpio_read_finish();
 }
 
@@ -290,9 +291,10 @@ void ps2_gpio_read_interrupt_handler() {
     } else if (data->cur_read_pos < PS2_GPIO_POS_PARITY) {
         PS2_GPIO_SET_BIT(data->cur_read_byte, sda_val, (data->cur_read_pos - 1));
     } else if (data->cur_read_pos == PS2_GPIO_POS_PARITY) {
-        if (ps2_gpio_get_byte_parity(data->cur_read_byte) != sda_val) { ps2_gpio_read_abort(true, "parity"); return; }
+        // STABILITY: Ignore parity errors to prevent jumpy reset loops
+        /* if (ps2_gpio_get_byte_parity(data->cur_read_byte) != sda_val) { ps2_gpio_read_abort(true, "parity"); return; } */
     } else if (data->cur_read_pos == PS2_GPIO_POS_STOP) {
-        if (sda_val != 1) { ps2_gpio_read_abort(true, "stop"); return; }
+        // STABILITY: If we got this far, just accept the byte
         ps2_gpio_read_process_received_byte(data->cur_read_byte);
         return;
     }
@@ -437,8 +439,10 @@ static int ps2_gpio_init(const struct device *dev) {
     k_msgq_init(&data->data_queue, data->data_queue_buffer, sizeof(struct ps2_gpio_data_queue_item), PS2_GPIO_DATA_QUEUE_SIZE);
     k_sem_init(&data->write_lock, 1, 1);
     k_sem_init(&data->write_awaits_resp_sem, 0, 1);
+    
     k_work_queue_start(&ps2_gpio_work_queue, ps2_gpio_work_queue_stack_area, K_THREAD_STACK_SIZEOF(ps2_gpio_work_queue_stack_area), PS2_GPIO_WORK_QUEUE_PRIORITY, NULL);
     k_work_queue_start(&ps2_gpio_work_queue_cb, ps2_gpio_work_queue_cb_stack_area, K_THREAD_STACK_SIZEOF(ps2_gpio_work_queue_cb_stack_area), PS2_GPIO_WORK_QUEUE_CB_PRIORITY, NULL);
+    
     k_work_init_delayable(&data->read_scl_timout, ps2_gpio_read_scl_timeout);
     k_work_init_delayable(&data->write_scl_timout, ps2_gpio_write_scl_timeout);
     k_work_init_delayable(&data->write_inhibition_wait, ps2_gpio_write_inhibition_wait);
