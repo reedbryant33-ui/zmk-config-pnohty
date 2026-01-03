@@ -1,0 +1,29 @@
+description: PS/2 Mouse Input Driver
+
+compatible: "zmk,input-mouse-ps2"
+
+include: base.yaml
+
+properties:
+  ps2-device:
+    type: phandle
+    required: true
+    description: The PS/2 bus device (gpio-ps2)
+
+  rst-gpios:
+    type: phandle-array
+    required: false
+    description: Optional GPIO to power-cycle the trackpoint
+
+  sample-rate:
+    type: int
+    default: 100
+    description: PS/2 Sampling Rate
+
+  scroll-mode:
+    type: boolean
+    description: Enable scroll mode behavior
+
+  tp-press-to-select:
+    type: boolean
+    description: Enable Trackpoint Press-to-Select feature

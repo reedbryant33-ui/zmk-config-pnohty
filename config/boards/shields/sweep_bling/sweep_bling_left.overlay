@@ -39,22 +39,21 @@
             ;
     };
 
-    /* * SWAPPED PINS TEST 
-     * Previous: SDA=1, SCL=0
-     * New:      SDA=0, SCL=1
-     */
-    trackpoint_input: trackpoint_input {
+    /* THE BUS: This talks to the physical pins */
+    trackpoint_bus: trackpoint_bus {
         compatible = "gpio-ps2";
         sda-gpios = <&gpio0 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
         scl-gpios = <&gpio0 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
     };
 
-    trackpoint_listener: trackpoint_listener {
-        compatible = "zmk,input-listener-ps2";
-        device = <&trackpoint_input>;
+    /* THE DRIVER: This runs the input_mouse_ps2.c logic */
+    trackpoint_driver: trackpoint_driver {
+        compatible = "zmk,input-mouse-ps2";
+        ps2-device = <&trackpoint_bus>;
     };
 };
 
+/* Enable the USB Serial Console for debugging */
 &zephyr_udc0 {
     status = "okay";
     cdc_acm_uart0: cdc_acm_uart0 {
