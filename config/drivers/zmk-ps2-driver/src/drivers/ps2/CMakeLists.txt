@@ -11,8 +11,10 @@ zephyr_library_sources_ifdef(CONFIG_PS2_PIO
 )
 
 if(CONFIG_PS2_PIO)
+    if(CONFIG_SOC_RP2040)
     pico_generate_pio_header(
         ps2_pio/ps2_rx.pio
         OUTPUT_HEADER "ps2_rx.pio.h"
     )
+endif()
 endif()
