@@ -24,3 +24,4 @@ We need to implement an **RP2040 PIO-based PS/2 driver**.
 
 ## General instructions
 1. **ask vs agent**: If I am just asking you something, do not give me large code blocks. When I ask, I just want to talk about ideas at a high level - I do not want you to give me code to copy and paste. 
+2. **commit message**: when I ask you to add, commit, and push code, always give me a detailed commit message that explains what you changed and why.
