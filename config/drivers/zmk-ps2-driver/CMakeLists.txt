@@ -1,6 +1,3 @@
-if(CONFIG_SOC_RP2040)
-  find_package(PicoSdk REQUIRED)
-endif()
 add_subdirectory(src/drivers)
 
 target_sources_ifdef(CONFIG_ZMK_INPUT_LISTENER_PS2 app PRIVATE src/mouse/input_listener_ps2.c)
