@@ -41,9 +41,10 @@
 
     /* THE BUS: Testing GP12 and GP13 */
     trackpoint_bus: trackpoint_bus {
-        compatible = "gpio-ps2";
-        sda-gpios = <&gpio0 12 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
-        scl-gpios = <&gpio0 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>;
+        // Change compatible from "gpio-ps2" to "pio-ps2"
+        compatible = "pio-ps2";
+        sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>; // Assuming GP2 for SDA
+        scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>; // Assuming GP3 for SCL
     };
 
     trackpoint_driver: trackpoint_driver {

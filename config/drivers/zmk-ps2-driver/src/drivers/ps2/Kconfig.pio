@@ -1,0 +1,40 @@
+# Copyright (c) 2023 GitHub Copilot
+# SPDX-License-Identifier: Apache-2.0
+
+DT_COMPAT_PS2_PIO := pio-ps2
+
+config PS2_PIO
+	bool "RP2040 PIO-based PS/2 support"
+	default $(dt_compat_enabled,$(DT_COMPAT_PS2_PIO))
+	help
+	  Enable hardware-accelerated PS/2 support using RP2040 PIO state machines.
+	  This driver offloads timing-critical PS/2 frame decoding to the PIO,
+	  reducing CPU load and improving reliability compared to GPIO bit-banging.
+
+if PS2_PIO
+
+config PS2_PIO_ENABLE_PS2_RESEND_CALLBACK
+	bool "Notify the PS2 device driver (mouse driver) when the received data is invalid and a resend is requested from the peripheral. This can help the higher level PS2 device driver handle transmission errors with less side-effects."
+	default n
+	select ZMK_INPUT_MOUSE_PS2_ENABLE_PS2_RESEND_CALLBACK
+
+# PS/2 events must be processed within 30-50us. Therefore we shift the
+# BT_CTLR_LLL_PRIO from 0 to 1 and BT_CTLR_ULL_* priorities from 1 to 2.
+# We then set the PIO interrupt priority to 0 (highest).
+config BT_CTLR_ADVANCED_FEATURES
+	default y
+
+config BT_CTLR_LLL_PRIO
+	default 1
+
+config BT_CTLR_ULL_HIGH_PRIO
+	default 2
+
+config BT_CTLR_ULL_LOW_PRIO
+	default 2
+
+config PS2_PIO_INTERRUPT_LOG_ENABLED
+	bool "Enable extensive PIO interrupt logging."
+	default n
+
+endif # PS2_PIO

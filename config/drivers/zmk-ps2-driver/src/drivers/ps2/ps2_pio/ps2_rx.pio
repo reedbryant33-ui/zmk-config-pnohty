@@ -1,0 +1,43 @@
+; filepath: config/drivers/zmk-ps2-driver/src/drivers/ps2/ps2_pio/ps2_rx.pio
+.program ps2_rx
+.side_set 1 opt ; Optional side-set for debugging (e.g., indicating state)
+
+; Pin configuration:
+;   in_base: SDA pin (e.g., GP2)
+;   jmp_pin: SCL pin (e.g., GP3)
+
+; Autopush 11 bits to RX FIFO (start, 8 data, parity, stop)
+
+.wrap_target
+start:
+    ; Wait for SCL to go high (idle state)
+    ; [20] is a delay of 20 PIO clock cycles for debouncing/stabilization.
+    wait 1 pin 0 [20] ; SCL high (pin 0 is SCL, configured as jmp_pin)
+    ; Wait for SCL to go low (start of transmission, first falling edge)
+    wait 0 pin 0 [20] ; SCL low
+
+    ; Read Start bit (always 0)
+    ; 'in pins, 1' reads 1 bit from the 'in_base' pin (SDA) into the ISR.
+    ; With 'in_shiftdir' set to right, the first bit goes to ISR bit 0.
+    in pins, 1         ; Read 1 bit from SDA into ISR (LSB first)
+
+    ; Read 8 Data bits (LSB first)
+    set x, 7           ; Loop 8 times
+data_bit_loop:
+    wait 1 pin 0 [20]  ; SCL high
+    wait 0 pin 0 [20]  ; SCL low (falling edge)
+    in pins, 1         ; Read 1 bit from SDA into ISR
+    jmp x--, data_bit_loop
+
+    ; Read Parity bit (1 bit)
+    wait 1 pin 0 [20]  ; SCL high
+    wait 0 pin 0 [20]  ; SCL low (falling edge)
+    in pins, 1         ; Read 1 bit from SDA into ISR
+
+    ; Read Stop bit (1 bit, always 1)
+    wait 1 pin 0 [20]  ; SCL high
+    wait 0 pin 0 [20]  ; SCL low (falling edge)
+    in pins, 1         ; Read 1 bit from SDA into ISR
+
+    push block         ; Push the 11 bits from ISR to RX FIFO
+.wrap
