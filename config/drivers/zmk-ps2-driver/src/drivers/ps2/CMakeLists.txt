@@ -9,8 +9,6 @@ zephyr_library_sources_ifdef(CONFIG_PS2_UART ps2_uart.c)
 zephyr_library_sources_ifdef(CONFIG_PS2_PIO ps2_pio/ps2_pio.c)
 
 # Add PIO program for RP2040
-if(CONFIG_PS2_PIO)
-    # This assumes you have the Pico SDK integrated and pico_add_pio_program is available.
-    # If not, you might need to manually compile the .pio file to .h and include it.
-    pico_add_pio_program(ps2_pio_rx src/drivers/ps2/ps2_pio/ps2_rx.pio)
+if(CONFIG_PS2_PIO AND CONFIG_SOC_SERIES_RP2040)
+  zephyr_rp2040_pio_target(ps2_pio_driver PIO_FILES ps2_pio/ps2_rx.pio)
 endif()

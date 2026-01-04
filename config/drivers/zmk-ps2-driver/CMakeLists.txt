@@ -1,5 +1,3 @@
-find_package(PicoSdk REQUIRED)
-
 add_subdirectory(src/drivers)
 
 target_sources_ifdef(CONFIG_ZMK_INPUT_LISTENER_PS2 app PRIVATE src/mouse/input_listener_ps2.c)
