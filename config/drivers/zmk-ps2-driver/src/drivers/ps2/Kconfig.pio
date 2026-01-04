@@ -5,6 +5,7 @@ DT_COMPAT_PS2_PIO := pio-ps2
 
 config PS2_PIO
 	bool "RP2040 PIO-based PS/2 support"
+	depends on SOC_RP2040
 	default $(dt_compat_enabled,$(DT_COMPAT_PS2_PIO))
 	help
 	  Enable hardware-accelerated PS/2 support using RP2040 PIO state machines.
