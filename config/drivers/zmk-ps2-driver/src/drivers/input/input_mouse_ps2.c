@@ -21,6 +21,15 @@
 #include <dt-bindings/zmk/mouse_settings.h>
 #include <zmk/input_mouse_ps2.h>
 
+enum zmk_mouse_ps2_setting_id {
+    ZMK_MOUSE_PS2_SETTING_ID_SENSITIVITY,
+    ZMK_MOUSE_PS2_SETTING_ID_NEG_INERTIA,
+    ZMK_MOUSE_PS2_SETTING_ID_VALUE6,
+    ZMK_MOUSE_PS2_SETTING_ID_PTS_THRESHOLD,
+    ZMK_MOUSE_PS2_SETTING_ID_MAX,
+};
+
+
 LOG_MODULE_REGISTER(zmk_mouse_ps2, CONFIG_ZMK_LOG_LEVEL);
 
 static int zmk_mouse_ps2_settings_set_setting_by_id(enum zmk_mouse_ps2_setting_id setting_id,
