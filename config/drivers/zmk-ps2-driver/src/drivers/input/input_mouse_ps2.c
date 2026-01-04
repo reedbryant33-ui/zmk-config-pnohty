@@ -18,7 +18,25 @@
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/util.h>
 
-LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+#include <zmk/input_mouse_ps2.h>
+
+LOG_MODULE_REGISTER(zmk_mouse_ps2, CONFIG_ZMK_LOG_LEVEL);
+
+static int zmk_mouse_ps2_settings_set_setting_by_id(enum zmk_mouse_ps2_setting_id setting_id,
+                                                    int value);
+
+static int zmk_mouse_ps2_settings_reset_setting(enum zmk_mouse_ps2_setting_id setting_id) {
+    if (setting_id >= ZMK_MOUSE_PS2_SETTING_ID_MAX) {
+        return -EINVAL;
+    }
+
+    const struct zmk_mouse_ps2_setting *setting = &zmk_mouse_ps2_settings[setting_id];
+    if (setting->reset_val != NULL) {
+        return zmk_mouse_ps2_settings_set_setting_by_id(setting_id, *setting->reset_val);
+    }
+
+    return 0;
+}
 
 /*
  * Settings
@@ -1841,7 +1859,7 @@ int zmk_mouse_ps2_init_power_on_reset(const struct device *dev) {
     }
 
     LOG_INF("Performing Power-On-Reset on pin P%d.%02d...", config->rst_gpio_port_num,
-            config->rst_gpio.pin);
+                       config->rst_gpio.pin);
 
     if (data->rst_gpio.port == NULL) {
         data->rst_gpio = config->rst_gpio;

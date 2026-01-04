@@ -12,9 +12,10 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#include <zephyr/drivers/pinctrl.h>
 #include <hardware/pio.h>
 #include <hardware/clocks.h>
-#include <pico/stdlib.h> // For gpio_set_function, etc.
+// #include <pico/stdlib.h> // REMOVED: Use Zephyr APIs instead
 
 #include "ps2_rx.pio.h" // Generated PIO header
 
@@ -40,6 +41,7 @@ struct ps2_pio_data {
 struct ps2_pio_config {
     struct gpio_dt_spec scl_gpio;
     struct gpio_dt_spec sda_gpio;
+    const struct pinctrl_dev_config *pcfg;
 };
 
 void ps2_pio_read_callback_work_handler(struct k_work *work) {
@@ -49,9 +51,11 @@ void ps2_pio_read_callback_work_handler(struct k_work *work) {
     }
 }
 
-static void ps2_pio_isr(PIO pio, uint sm) {
-    struct ps2_pio_data *data = (struct ps2_pio_data *)pio_sm_get_user_data(pio, sm);
-    while (pio_sm_is_rx_fifo_empty(pio, sm) == false) {
+static void ps2_pio_isr(void *arg) {
+    const struct device *dev = (const struct device *)arg;
+    struct ps2_pio_data *data = dev->data;
+
+    while (!pio_sm_is_rx_fifo_empty(pio, sm)) {
         uint32_t raw_frame = pio_sm_get(pio, sm);
 
         // The PIO program pushes 11 bits: [stop_bit][parity_bit][data_7]...[data_0][start_bit]
@@ -83,7 +87,8 @@ static void ps2_pio_isr(PIO pio, uint sm) {
 
         // Add to data queue for ps2_pio_read
         if (k_msgq_put(&data->data_queue, &data_byte, K_NO_WAIT) != 0) {
-            k_msgq_get(&data->data_queue, &data_byte, K_NO_WAIT); // Drop oldest
+            uint8_t dropped_byte;
+            k_msgq_get(&data->data_queue, &dropped_byte, K_NO_WAIT); // Drop oldest
             k_msgq_put(&data->data_queue, &data_byte, K_NO_WAIT);
         }
 
@@ -93,6 +98,7 @@ static void ps2_pio_isr(PIO pio, uint sm) {
             k_work_submit(&data->callback_work);
         }
     }
+    pio_interrupt_clear(pio, PIO_IRQ0_INTE_SM0_RXNEMPTY_LSB << sm);
 }
 
 static int ps2_pio_read(const struct device *dev, uint8_t *value) {
@@ -109,33 +115,27 @@ static int ps2_pio_write(const struct device *dev, uint8_t value) {
 
     // Temporarily disable PIO RX and configure pins as GPIO outputs for writing
     pio_sm_set_enabled(pio, sm, false);
-    pio_set_input_sync_bypass(pio, sm, false); // Disable bypass for PIO to control pins
 
-    gpio_set_function(config->scl_gpio.pin, GPIO_FUNC_SIO);
-    gpio_set_dir(config->scl_gpio.pin, GPIO_OUT);
-    gpio_set_function(config->sda_gpio.pin, GPIO_FUNC_SIO);
-    gpio_set_dir(config->sda_gpio.pin, GPIO_OUT);
+    gpio_pin_configure_dt(&config->scl_gpio, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&config->sda_gpio, GPIO_OUTPUT);
 
     // PS/2 Host-to-Device Transmission Sequence:
     // 1. Host pulls Clock low for at least 100us (inhibit).
-    gpio_put(config->scl_gpio.pin, 0);
-    k_sleep(K_USEC(120)); // Inhibit time
+    gpio_pin_set_dt(&config->scl_gpio, 0);
+    k_busy_wait(120); // Inhibit time
 
     // 2. Host pulls Data low.
-    gpio_put(config->sda_gpio.pin, 0);
-    k_sleep(K_USEC(10)); // Small delay
+    gpio_pin_set_dt(&config->sda_gpio, 0);
+    k_busy_wait(10); // Small delay
 
     // 3. Host releases Clock (Clock goes high, driven by pull-up).
-    gpio_put(config->scl_gpio.pin, 1); // Set high, then configure as input
-    gpio_set_dir(config->scl_gpio.pin, GPIO_IN); // Release SCL
-    k_sleep(K_USEC(10)); // Wait for SCL to go high
+    gpio_pin_configure_dt(&config->scl_gpio, GPIO_INPUT | GPIO_PULL_UP); // Release SCL
+    k_busy_wait(10); // Wait for SCL to go high
 
     // Wait for device to take over SCL (first falling edge)
     int timeout_us = 5000; // Max 5ms for device to start clocking
-    int scl_val = gpio_get(config->scl_gpio.pin);
-    while (scl_val == 1 && timeout_us > 0) {
-        k_sleep(K_USEC(1));
-        scl_val = gpio_get(config->scl_gpio.pin);
+    while (gpio_pin_get_dt(&config->scl_gpio) == 1 && timeout_us > 0) {
+        k_busy_wait(1);
         timeout_us--;
     }
     if (timeout_us <= 0) {
@@ -154,10 +154,8 @@ static int ps2_pio_write(const struct device *dev, uint8_t value) {
     for (int i = 0; i < 11; i++) {
         // Wait for SCL low (device clock)
         timeout_us = 1000; // Max 1ms
-        scl_val = gpio_get(config->scl_gpio.pin);
-        while (scl_val == 1 && timeout_us > 0) {
-            k_sleep(K_USEC(1));
-            scl_val = gpio_get(config->scl_gpio.pin);
+        while (gpio_pin_get_dt(&config->scl_gpio) == 1 && timeout_us > 0) {
+            k_busy_wait(1);
             timeout_us--;
         }
         if (timeout_us <= 0) {
@@ -166,14 +164,12 @@ static int ps2_pio_write(const struct device *dev, uint8_t value) {
         }
 
         // Set SDA
-        gpio_put(config->sda_gpio.pin, (frame >> i) & 0x1);
+        gpio_pin_set_dt(&config->sda_gpio, (frame >> i) & 0x1);
 
         // Wait for SCL high (device clock)
         timeout_us = 1000; // Max 1ms
-        scl_val = gpio_get(config->scl_gpio.pin);
-        while (scl_val == 0 && timeout_us > 0) {
-            k_sleep(K_USEC(1));
-            scl_val = gpio_get(config->scl_gpio.pin);
+        while (gpio_pin_get_dt(&config->scl_gpio) == 0 && timeout_us > 0) {
+            k_busy_wait(1);
             timeout_us--;
         }
         if (timeout_us <= 0) {
@@ -183,15 +179,12 @@ static int ps2_pio_write(const struct device *dev, uint8_t value) {
     }
 
     // After sending 11 bits, release SDA (let pull-up make it high)
-    gpio_put(config->sda_gpio.pin, 1);
-    gpio_set_dir(config->sda_gpio.pin, GPIO_IN);
+    gpio_pin_configure_dt(&config->sda_gpio, GPIO_INPUT | GPIO_PULL_UP);
 
     // Wait for device ACK (SDA low for one clock period)
     timeout_us = 1000; // Max 1ms
-    int sda_val = gpio_get(config->sda_gpio.pin);
-    while (sda_val == 1 && timeout_us > 0) { // Wait for SDA low (ACK)
-        k_sleep(K_USEC(1));
-        sda_val = gpio_get(config->sda_gpio.pin);
+    while (gpio_pin_get_dt(&config->sda_gpio) == 1 && timeout_us > 0) { // Wait for SDA low (ACK)
+        k_busy_wait(1);
         timeout_us--;
     }
     if (timeout_us <= 0) {
@@ -201,10 +194,8 @@ static int ps2_pio_write(const struct device *dev, uint8_t value) {
 
     // Wait for device to release SDA (SDA high)
     timeout_us = 1000; // Max 1ms
-    sda_val = gpio_get(config->sda_gpio.pin);
-    while (sda_val == 0 && timeout_us > 0) { // Wait for SDA high
-        k_sleep(K_USEC(1));
-        sda_val = gpio_get(config->sda_gpio.pin);
+    while (gpio_pin_get_dt(&config->sda_gpio) == 0 && timeout_us > 0) { // Wait for SDA high
+        k_busy_wait(1);
         timeout_us--;
     }
     if (timeout_us <= 0) {
@@ -213,11 +204,8 @@ static int ps2_pio_write(const struct device *dev, uint8_t value) {
     }
 
 re_enable_pio:
-    // Re-enable PIO read
-    pio_gpio_init(pio, config->scl_gpio.pin);
-    pio_gpio_init(pio, config->sda_gpio.pin);
-    gpio_set_function(config->scl_gpio.pin, GPIO_FUNC_PIO0);
-    gpio_set_function(config->sda_gpio.pin, GPIO_FUNC_PIO0);
+    // Re-enable PIO read by setting pins back to PIO function
+    pinctrl_apply_state(config->pcfg, PINCTRL_STATE_DEFAULT);
     pio_sm_set_enabled(pio, sm, true);
 
     return (timeout_us > 0) ? 0 : -ETIMEDOUT;
@@ -263,24 +251,23 @@ static int ps2_pio_init(const struct device *dev) {
     LOG_INF("PS/2 PIO Initializing on SCL GP%d, SDA GP%d", config->scl_gpio.pin, config->sda_gpio.pin);
 
     // --- Power-On-Reset (POR) handling: Pull SCL/SDA low during initialization ---
-    // Temporarily configure SCL/SDA as GPIO outputs for POR sequence
-    gpio_init(config->scl_gpio.pin);
-    gpio_set_dir(config->scl_gpio.pin, GPIO_OUT);
-    gpio_init(config->sda_gpio.pin);
-    gpio_set_dir(config->sda_gpio.pin, GPIO_OUT);
-
     LOG_INF("PS/2 PIO: Performing SCL/SDA Power-On-Reset...");
-    gpio_put(config->scl_gpio.pin, 0);
-    gpio_put(config->sda_gpio.pin, 0);
+    gpio_pin_configure_dt(&config->scl_gpio, GPIO_OUTPUT_INACTIVE);
+    gpio_pin_configure_dt(&config->sda_gpio, GPIO_OUTPUT_INACTIVE);
     k_sleep(K_MSEC(100)); // Hold low for 100ms
 
-    // Release SCL and SDA (let pull-ups take over)
-    gpio_put(config->scl_gpio.pin, 1);
-    gpio_put(config->sda_gpio.pin, 1);
+    // Release SCL and SDA (let pull-ups take over) by setting them as inputs
+    gpio_pin_configure_dt(&config->scl_gpio, GPIO_INPUT | GPIO_PULL_UP);
+    gpio_pin_configure_dt(&config->sda_gpio, GPIO_INPUT | GPIO_PULL_UP);
     k_sleep(K_MSEC(100)); // Wait for lines to stabilize high
     // --- End of POR handling ---
 
     // PIO initialization
+    if (pinctrl_apply_state(config->pcfg, PINCTRL_STATE_DEFAULT) < 0) {
+        LOG_ERR("Failed to apply pinctrl state");
+        return -EIO;
+    }
+
     uint offset = pio_add_program(pio, &ps2_rx_program);
     sm = pio_claim_unused_sm(pio, true); // Claim an unused state machine
 
@@ -296,26 +283,12 @@ static int ps2_pio_init(const struct device *dev) {
 
     pio_sm_init(pio, sm, offset, &c);
 
-    // Configure SCL and SDA as PIO controlled inputs with pull-ups
-    pio_gpio_init(pio, config->scl_gpio.pin);
-    pio_gpio_init(pio, config->sda_gpio.pin);
-    gpio_set_pulls(config->scl_gpio.pin, true, false); // SCL pull-up
-    gpio_set_pulls(config->sda_gpio.pin, true, false); // SDA pull-up
-    // Ensure input override is normal for PIO to control
-    gpio_set_input_override(config->scl_gpio.pin, GPIO_OVERRIDE_NORMAL);
-    gpio_set_input_override(config->sda_gpio.pin, GPIO_OVERRIDE_NORMAL);
-
-    // Set PIO pins as inputs
-    pio_sm_set_consecutive_pindirs(pio, sm, config->scl_gpio.pin, 1, false); // SCL as input
-    pio_sm_set_consecutive_pindirs(pio, sm, config->sda_gpio.pin, 1, false); // SDA as input
+    // PIO pin configuration is now handled by pinctrl in the devicetree
 
     // Enable PIO interrupt for RX FIFO not empty
-    pio_set_irq0_enabled(pio, true);
-    irq_set_exclusive_handler(PIO0_IRQ_0, ps2_pio_isr);
-    irq_set_priority(PIO0_IRQ_0, 0); // Highest priority for PIO ISR
-    irq_set_enabled(PIO0_IRQ_0, true);
-
-    pio_sm_set_user_data(pio, sm, data); // Store data pointer for ISR
+    pio_set_irq0_enabled(pio, PIO_IRQ0_INTE_SM0_RXNEMPTY_LSB << sm, true);
+    IRQ_CONNECT(PIO0_IRQ_0, 0, ps2_pio_isr, DEVICE_DT_INST_GET(0), 0);
+    irq_enable(PIO0_IRQ_0);
 
     pio_sm_set_enabled(pio, sm, true);
 
@@ -324,10 +297,12 @@ static int ps2_pio_init(const struct device *dev) {
 
 // Device tree instantiation
 #define PS2_PIO_DEFINE(n)                                                                          \
+    PINCTRL_DT_INST_DEFINE(n);                                                                     \
     static struct ps2_pio_data data##n;                                                            \
     static const struct ps2_pio_config config##n = {                                               \
         .scl_gpio = GPIO_DT_SPEC_INST_GET(n, scl_gpios),                                           \
         .sda_gpio = GPIO_DT_SPEC_INST_GET(n, sda_gpios),                                           \
+        .pcfg = PINCTRL_DT_INST_DEV_CONFIG_GET(n),                                                 \
     };                                                                                             \
     DEVICE_DT_INST_DEFINE(n, &ps2_pio_init, NULL, &data##n, &config##n,                            \
                           POST_KERNEL, CONFIG_PS2_INIT_PRIORITY,                                   \

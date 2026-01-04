@@ -21,3 +21,6 @@ We need to implement an **RP2040 PIO-based PS/2 driver**.
 - Standard PS/2 Frame: 1 start bit (0), 8 data bits (LSB first), 1 parity bit (odd), 1 stop bit (1).
 - RP2040 PIO can emulate UART-like protocols on any GPIO.
 - Goal: Move timing-critical logic from the main CPU to the PIO State Machine.
+
+## General instructions
+1. **ask vs agent**: If I am just asking you something, do not give me large code blocks. When I ask, I just want to talk about ideas at a high level - I do not want you to give me code to copy and paste. 
