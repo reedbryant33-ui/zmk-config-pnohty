@@ -19,6 +19,7 @@
 #include <zephyr/sys/util.h>
 
 #include <zmk/input_mouse_ps2.h>
+#include <dt-bindings/zmk/mouse_settings.h>
 
 LOG_MODULE_REGISTER(zmk_mouse_ps2, CONFIG_ZMK_LOG_LEVEL);
 
