@@ -20,7 +20,7 @@ LOG_MODULE_REGISTER(ps2_gpio);
 #define PS2_GPIO_READ_MAX_RETRY 3
 #define PS2_GPIO_DATA_QUEUE_SIZE 100
 
-// BOOSTED PRIORITY: Ensures RP2040 doesn't miss fast bits
+// BOOSTED PRIORITY: Runs as a "Cooperative" thread (-1) so the CPU prioritizes it over everything else
 #define PS2_GPIO_WORK_QUEUE_PRIORITY -1
 #define PS2_GPIO_WORK_QUEUE_STACK_SIZE 1024
 #define PS2_GPIO_WORK_QUEUE_CB_PRIORITY 2
@@ -36,9 +36,9 @@ LOG_MODULE_REGISTER(ps2_gpio);
 #define PS2_GPIO_RESP_RESEND 0xfe
 #define PS2_GPIO_RESP_FAILURE 0xfc
 
-/* PS/2 Timings - RELAXED */
+/* PS/2 Timings - RELAXED for stability */
 #define PS2_GPIO_TIMING_SCL_CYCLE_MIN 10   
-#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  // Tolerant of slow trackpoints
+#define PS2_GPIO_TIMING_SCL_CYCLE_MAX 500  
 #define PS2_GPIO_TIMING_SCL_INHIBITION_MIN 100
 #define PS2_GPIO_TIMING_SCL_INHIBITION (3 * PS2_GPIO_TIMING_SCL_INHIBITION_MIN)
 #define PS2_GPIO_TIMING_SCL_INHIBITION_TIMER_DELAY_MAX 1000
@@ -85,7 +85,7 @@ struct ps2_gpio_data {
     uint8_t callback_byte;
     ps2_callback_t callback_isr;
     
-    // Tracks if the current packet is valid
+    // SMART FILTER: Tracks if the current packet is valid
     bool current_packet_valid; 
 
 #if IS_ENABLED(CONFIG_PS2_GPIO_ENABLE_PS2_RESEND_CALLBACK)
@@ -437,8 +437,10 @@ static int ps2_gpio_init(const struct device *dev) {
     k_msgq_init(&data->data_queue, data->data_queue_buffer, sizeof(struct ps2_gpio_data_queue_item), PS2_GPIO_DATA_QUEUE_SIZE);
     k_sem_init(&data->write_lock, 1, 1);
     k_sem_init(&data->write_awaits_resp_sem, 0, 1);
+    
     k_work_queue_start(&ps2_gpio_work_queue, ps2_gpio_work_queue_stack_area, K_THREAD_STACK_SIZEOF(ps2_gpio_work_queue_stack_area), PS2_GPIO_WORK_QUEUE_PRIORITY, NULL);
     k_work_queue_start(&ps2_gpio_work_queue_cb, ps2_gpio_work_queue_cb_stack_area, K_THREAD_STACK_SIZEOF(ps2_gpio_work_queue_cb_stack_area), PS2_GPIO_WORK_QUEUE_CB_PRIORITY, NULL);
+    
     k_work_init_delayable(&data->read_scl_timout, ps2_gpio_read_scl_timeout);
     k_work_init_delayable(&data->write_scl_timout, ps2_gpio_write_scl_timeout);
     k_work_init_delayable(&data->write_inhibition_wait, ps2_gpio_write_inhibition_wait);
