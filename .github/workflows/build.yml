@@ -27,15 +27,10 @@ jobs:
       - name: West Zephyr Export
         run: west zephyr-export
 
-      - name: Debug - List Driver Files
-        run: |
-          echo "Checking driver directory..."
-          ls -R $GITHUB_WORKSPACE/config/drivers
-          
-      - name: West Build
+- name: West Build
         run: |
           west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="$GITHUB_WORKSPACE/config"
-
+          
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
