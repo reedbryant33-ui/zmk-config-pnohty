@@ -1,5 +1,0 @@
-  # Copyright (c) 2020 The ZMK Contributors
-  # SPDX-License-Identifier: MIT
-
-  rsource "ps2/Kconfig"
-  rsource "input/Kconfig"
