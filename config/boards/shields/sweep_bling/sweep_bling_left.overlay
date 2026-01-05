@@ -14,11 +14,15 @@
         pinctrl-0 = <&pio_uart_default>;
         pinctrl-names = "default";
         status = "okay";
+    interrupt-parent = <&nvic>;
+    interrupts = <31 1>;
 
         /* Label the device clearly here */
         ps2_device: ps2_device {
             compatible = "petejohanson,ps2-uart";
             status = "okay";
+    interrupt-parent = <&nvic>;
+    interrupts = <31 1>;
         };
     };
 
@@ -67,6 +71,8 @@
 /* 3. Define the PIO pins outside the root node */
 &pio0 {
     status = "okay";
+    interrupt-parent = <&nvic>;
+    interrupts = <31 1>;
     pio_uart_default: pio_uart_default {
         pinmux = <2>, <3>; 
     };
