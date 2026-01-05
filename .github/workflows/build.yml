@@ -34,8 +34,8 @@ jobs:
           
       - name: West Build
         run: |
-          west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="$GITHUB_WORKSPACE/config" -DZMK_EXTRA_MODULES="$GITHUB_WORKSPACE/config/drivers/zmk-ps2-driver"
-
+          west build -s zmk/app -b ${{ matrix.board }} -- -DSHIELD=${{ matrix.shield }} -DZMK_CONFIG="$GITHUB_WORKSPACE/config"
+          
       - name: Archive artifacts
         uses: actions/upload-artifact@v4
         with:
