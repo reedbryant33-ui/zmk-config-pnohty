@@ -1,3 +1,4 @@
+#include <dt-bindings/pinctrl/rpi-pico-pinctrl.h>
 #include <dt-bindings/zmk/matrix_transform.h>
 
 / {
@@ -5,6 +6,15 @@
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
         zephyr,console = &cdc_acm_uart0;
+        zmk,pointing_device = &ps2;
+    };
+
+    input_listener {
+        compatible = "zmk,input-listener";
+        device = <&ps2>;
+        xy-swap;
+        scale-multiplier = <2>;
+        scale-divisor = <3>;
     };
 
     default_transform: matrix_transform {
@@ -38,40 +48,49 @@
             , <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)> 
             ;
     };
+};
 
-    /* THE BUS: Testing GP12 and GP13 */
-    trackpoint_bus: trackpoint_bus {
-        // Change compatible from "gpio-ps2" to "pio-ps2"
-        compatible = "gpio-ps2";
-        sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>; // Assuming GP2 for SDA
-        scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP | GPIO_OPEN_DRAIN)>; // Assuming GP3 for SCL
-    };
-
-    trackpoint_driver: trackpoint_driver {
-        compatible = "zmk,input-mouse-ps2";
-        ps2-device = <&trackpoint_bus>;
-
-        /* * SAFE MODE: Commenting out ALL tuning commands. 
-         * Sending commands seems to crash your specific trackpoint module.
-         */
-        // tp-sensitivity = <200>;
-        // tp-neg-inertia = <5>;
-        // tp-val6-upper-speed = <250>;
-        // tp-press-to-select; 
-        
-        /* Just tell ZMK to perform the Power-On-Reset and then listen */
-    };
-
-    /* THE LISTENER: We need this back! */
-    trackpoint_listener: trackpoint_listener {
-        compatible = "zmk,input-listener";
-        device = <&trackpoint_driver>;
+&pinctrl {
+    uart0_default: uart0_default {
+        group1 {
+            pinmux = <RPI_PICO_PIN_FUNC(2, UART0_TX)>,
+                     <RPI_PICO_PIN_FUNC(3, UART0_RX)>;
+        };
     };
 };
 
-&zephyr_udc0 {
-    status = "okay";
-    cdc_acm_uart0: cdc_acm_uart0 {
-        compatible = "zephyr,cdc-acm-uart";
+&pio0 {
+    uart_tx_inst: uart_tx {
+        compatible = "raspberrypi,pico-uart-tx";
+        pinctrl-0 = <&uart0_default>;
+        pinctrl-names = "default";
+        sm = <0>;
+        fifo = <0>;
     };
+
+    uart_rx_inst: uart_rx {
+        compatible = "raspberrypi,pico-uart-rx";
+        pinctrl-0 = <&uart0_default>;
+        pinctrl-names = "default";
+        sm = <1>;
+        fifo = <1>;
+    };
+};
+
+&uart0 {
+    compatible = "raspberrypi,pico-uart-pio";
+    status = "okay";
+    pinctrl-0 = <&uart0_default>;
+    pinctrl-names = "default";
+    tx-instance = <&uart_tx_inst>;
+    rx-instance = <&uart_rx_inst>;
+
+    ps2: ps2 {
+        compatible = "petejohanson,ps2-uart";
+        status = "okay";
+    };
+};
+
+&i2c0 {
+	status = "disabled";
 };
