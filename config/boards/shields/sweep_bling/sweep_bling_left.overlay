@@ -4,14 +4,28 @@
     chosen {
         zmk,kscan = &kscan0;
         zmk,matrix_transform = &default_transform;
-        /* Link ZMK pointing to the listener, not the raw device */
+        /* link to the listener for pointing data */
         zmk,pointing_device = &trackpoint_listener;
     };
 
-    /* Frontend: Processes movement and sends HID reports */
+    /* 1. Define the PIO-UART Bus and the PS/2 Device inside it first */
+    trackpoint_bus: trackpoint_bus {
+        compatible = "raspberrypi,pico-uart-pio";
+        pinctrl-0 = <&pio_uart_default>;
+        pinctrl-names = "default";
+        status = "okay";
+
+        /* Label the device clearly here */
+        ps2_device: ps2_device {
+            compatible = "petejohanson,ps2-uart";
+            status = "okay";
+        };
+    };
+
+    /* 2. Frontend: Link to the label defined above */
     trackpoint_listener: input_listener {
         compatible = "zmk,input-listener";
-        device = <&ps2>;
+        device = <&ps2_device>; // Use the explicit label
         xy-swap;
         scale-multiplier = <2>;
         scale-divisor = <3>;
@@ -50,27 +64,11 @@
     };
 };
 
-/* 1. Define the PIO State Machine for UART on GP2/GP3 */
+/* 3. Define the PIO pins outside the root node */
 &pio0 {
     status = "okay";
-
     pio_uart_default: pio_uart_default {
-        /* Raw pin numbers for GP2 and GP3 on RP2040 */
         pinmux = <2>, <3>; 
-    };
-};
-
-/* 2. Configure the PIO-UART Backend Bus */
-trackpoint_bus: trackpoint_bus {
-    compatible = "raspberrypi,pico-uart-pio";
-    pinctrl-0 = <&pio_uart_default>;
-    pinctrl-names = "default";
-    status = "okay";
-
-    /* 3. Define the PS/2 Device inside the PIO-UART bus */
-    ps2: ps2 {
-        compatible = "petejohanson,ps2-uart";
-        status = "okay";
     };
 };
 
