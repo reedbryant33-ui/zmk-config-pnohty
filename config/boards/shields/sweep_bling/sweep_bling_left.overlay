@@ -2,10 +2,8 @@
 
 / {
     chosen {
-        zmk,kscan = &kscan0;
-        zmk,matrix_transform = &default_transform;
-        /* link to the listener for pointing data */
-        zmk,pointing_device = &trackpoint_listener;
+        zephyr,console = &cdc_acm_uart0;
+        zephyr,shell-uart = &cdc_acm_uart0;
     };
 
     /* 1. Define the PIO-UART Bus and the PS/2 Device inside it first */
@@ -80,4 +78,14 @@
 
 &i2c0 {
     status = "disabled";
+};
+
+/* Enable the RP2040 USB controller */
+&zephyr_udc0 {
+    status = "okay";
+
+    /* Create the virtual serial port */
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
+    };
 };
