@@ -17,8 +17,26 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-07 | Baseline Build Success & Trackpoint Feature Deferral
+- **Commit**: 3706150 | **Result**: PASS (Build)
+- **Objective**: Establish a working baseline build by deferring trackpoint features, then incrementally re-enable them.
+- **Technical Changes**:
+    - Added `zmk,physical-layout` and `zmk,kscan` chosen nodes to `sweep_bling_left.overlay`.
+    - Defined `matrix_physical_layout` with required `display-name` and `transform` properties.
+    - **Disabled** PIO UART, PS/2 device, and trackpoint listener definitions (commented out) to eliminate build errors.
+    - All undefined Kconfig symbols remain commented.
+- **Build Result**: SUCCESS
+    - Firmware built: `zmk.uf2` (122880 bytes)
+    - Memory usage: FLASH 2.91%, RAM 10.26%
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**:
+    1. Flash the baseline firmware to test keyboard matrix functionality.
+    2. Once baseline is confirmed working, re-enable PIO UART and PS/2 device definitions one at a time.
+    3. Verify the `petejohanson,ps2-uart` binding exists in the ZMK devicetree bindings.
+    4. If binding is missing, create custom binding file or use alternative PS/2 driver.
+
 ### 2026-01-07 | Configuration Cleanup & Build System Validation
-- **Commit**: c1d7c42 | **Result**: FAIL (Build - Undefined Symbols & Compilation)
+- **Commit**: dc1e174 | **Result**: FAIL (Build - Undefined Symbols & Compilation)
 - **Objective**: Clean up invalid Kconfig symbols and achieve a successful build.
 - **Technical Changes**:
     - Removed undefined Kconfig symbols: `CONFIG_ZMK_POINTING_DEVICE`, `CONFIG_INPUT_MOUSE`, `CONFIG_INPUT_MOUSE_PS2_PIO`, `CONFIG_ZMK_INPUT_LISTENER`.
@@ -27,27 +45,11 @@
 - **Build Errors**:
     - **First Attempt**: Kconfig warnings for undefined symbols → Build aborted.
     - **Second Attempt**: Compilation failed with `'layouts' undeclared` in `zmk/app/src/physical_layouts.c:120`.
-- **Hardware Status**: PENDING PHYSICAL VERIFICATION.
-- **Next Steps**: 
-    1. Verify that `CONFIG_ZMK_PHYSICAL_LAYOUTS=y` resolves the layouts compilation error.
-    2. Check if additional keymap/shield configuration is required to populate the layouts array.
-    3. Consider building without pointing device features initially to establish a baseline, then incrementally add features.
+    - **Third Attempt**: `ZMK_PHYSICAL_LAYOUTS` itself is undefined.
+- **Lesson Learned**: Physical layouts require proper devicetree definition with `display-name`, `transform`, and chosen node reference, not just Kconfig.
 
 ### 2026-01-05 | PIO UART Configuration & Serial Debugging
 - **Commit**: 00134371d135ec9feca498b4fbb16bf20b5a6049 | **Result**: FAIL (Build)
-- **Objective**: First build attempt following new instructions.
-- **Technical Changes**:
-    - Added new instruction file.
-    - Staged and committed specified files.
-- **Lesson Learned**: Build command requires `-s` flag to specify source directory and `_left` or `_right` suffix for the shield. The build is failing due to a Kconfig warning related to `ZMK_PHYSICAL_LAYOUTS`.
-
-### 2026-01-05 | PIO UART Configuration & Serial Debugging
-- **Commit**: d811f2a | **Result**: FAIL (Build)
-- **Objective**: Fix Kconfig warnings and enable pointing device.
-- **Technical Changes**:
-    - Enabled pointing device options in `sweep_bling.conf`.
-    - Commented out `CONFIG_ZMK_PHYSICAL_LAYOUTS=n`.
-- **Lesson Learned**: The build is still failing due to undefined Kconfig symbols related to the pointing device. This suggests a problem with how the Kconfig files are being sourced or defined.
 
 ### 2026-01-05 | PIO UART Configuration & Serial Debugging
 - **Objective**: Establish hardware-timed communication and enable logging.
