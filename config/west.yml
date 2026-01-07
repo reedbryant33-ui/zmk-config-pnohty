@@ -9,5 +9,8 @@ manifest:
       remote: petejohanson
       revision: feat/pointers-move-scroll # This is the "God Tier" mouse branch
       import: app/west.yml
+    #- name: zmk-ps2-uart-driver
+      #remote: petejohanson
+      #revision: main
   self:
     path: config

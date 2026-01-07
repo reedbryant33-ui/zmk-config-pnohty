@@ -1,0 +1,19 @@
+
+/ {
+    chosen {
+        zmk,pointing = &trackpoint;
+    };
+
+    trackpoint_bus: trackpoint_bus {
+        compatible = "zmk,kscan-gpio-matrix";
+        label = "TRACKPOINT_BUS";
+        kscan-dev = <&ps2_device>;
+    };
+
+    ps2_device: ps2_device {
+        compatible = "petejohanson,ps2-uart";
+        label = "PS2_DEVICE";
+        gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>,
+                <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+    };
+};

@@ -9,17 +9,6 @@
 ## Current Status Summary
 - **Matrix**: Functional (Keys working).
 - **Build System**: GitHub Actions (Remote).
-- **Board Target**: `rpi_pico` (Required for Zephyr 3.5.0 compatibility).
-- **Active Driver**: Pete Johanson's PIO UART.
-- **Issue**: Build passes, but no movement. WebSerial debug logging is currently enabled.
-
----
-
-# ZMK Trackpoint Debug Log: Sweeq MX
-
-## Current Status Summary
-- **Matrix**: Functional (Keys working).
-- **Build System**: GitHub Actions (Remote).
 - **Board Target**: `rpi_pico` (Zephyr 3.5.0 compatibility).
 - **Active Driver**: Pete Johanson's PIO UART (Built-in to pointer branch).
 - **Issue**: Firmware builds/flashes, but no trackpoint movement/detection.
