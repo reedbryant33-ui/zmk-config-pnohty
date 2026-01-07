@@ -10,15 +10,46 @@
 - **Matrix**: Functional (Keys working).
 - **Build System**: Local (Fixed SDK path).
 - **Board Target**: `rpi_pico` (Zephyr 3.5.0 compatibility).
-- **Active Driver**: Pete Johanson's PIO UART (Built-in to pointer branch).
-- **Issue**: Firmware builds/flashes, but no trackpoint movement/detection.
+- **Active Driver**: Pete Johanson's PIO UART (Module NOT YET INCLUDED).
+- **Issue**: Firmware builds/flashes, keys work, but trackpoint not detected—PS/2 UART driver module is commented out in west.yml.
 
 ---
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-07 | First Flash Test - Trackpoint Detection Failure
+- **Commit**: aff0da5 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
+- **Objective**: Flash rebuilt firmware and test trackpoint functionality with PIO UART + PS/2 device enabled in devicetree.
+- **Test Environment**:
+    - Firmware: `build/zephyr/zmk.uf2` (122880 bytes)
+    - Serial Monitor: WebSerial (VID:PID 1d50:615e)
+    - Test Date: 2026-01-07
+- **Test Results**:
+    - **USB Connectivity**: ✅ PASS
+      - Device enumerated correctly as OpenMoko HID device
+      - USB configured successfully
+    - **Keyboard Matrix**: ✅ PASS
+      - Key presses detected and processed (positions 20, 10, 0 tested)
+      - HID reports sent correctly
+      - Example: "kscan_matrix_read: Sending event at 4,2 state on/off"
+    - **Trackpoint**: ❌ FAIL
+      - **No PS/2 device initialization in logs**
+      - **No input_listener activity**
+      - **No trackpoint movement detected**
+- **Log Analysis**:
+    - Boot logs show: `kscan_matrix_init_input_inst: ready`
+    - USB enumeration: Device reset → configured
+    - Only keyboard matrix events present, no PS/2 bus activity
+    - **Root Cause Identified**: PS/2 UART driver module is commented out in `config/west.yml`
+- **Hardware Status**: PENDING (Trackpoint driver not loaded)
+- **Next Steps**:
+    1. Uncomment `zmk-ps2-uart-driver` in `config/west.yml`
+    2. Run `west update` to fetch the driver module
+    3. Rebuild firmware
+    4. Retest with driver loaded
+
 ### 2026-01-07 | Build Fix - Kconfig & Devicetree Conflicts
-- **Commit**: f936dee | **Result**: PASS (Build)
+- **Commit**: aff0da5 | **Result**: PASS (Build)
 - **Objective**: Fix build system and re-enable trackpoint PIO UART + PS/2 device definitions.
 - **Technical Changes**:
     - Removed undefined Kconfig symbols: `CONFIG_ZMK_POINTING_DEVICE` and `CONFIG_INPUT_MOUSE` from `sweep_bling.conf` (these symbols don't exist in this ZMK branch).
