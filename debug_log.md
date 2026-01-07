@@ -8,14 +8,32 @@
 
 ## Current Status Summary
 - **Matrix**: Functional (Keys working).
-- **Build System**: Local (Fixed SDK path).
+- **Build System**: Local (Fixed SDK path, binding files added).
 - **Board Target**: `rpi_pico` (Zephyr 3.5.0 compatibility).
-- **Active Driver**: Pete Johanson's PIO UART (Module NOT YET INCLUDED).
-- **Issue**: Firmware builds/flashes, keys work, but trackpoint not detected—PS/2 UART driver module is commented out in west.yml.
+- **Active Driver**: Pete Johanson's PIO UART (Devicetree binding resolved, driver not yet loaded).
+- **Issue**: Firmware builds successfully, trackpoint device defined in devicetree but driver binary not included/initialized.
 
 ---
 
 ## Active Debugging Entries (Newest First)
+
+### 2026-01-07 | PS/2 UART Binding File Creation & Clean Build
+- **Commit**: 06e621c | **Result**: PASS (Build)
+- **Objective**: Create devicetree binding for petejohanson,ps2-uart and establish clean build path.
+- **Technical Changes**:
+    - Created `config/dts-bindings/petejohanson,ps2-uart.yaml` binding file (was missing)
+    - Binding defines property schema: `gpios` (phandle-array for SDA/SCL pins)
+    - Added `config/CMakeLists.txt` to register custom bindings directory with ZMK build system
+    - Attempted to include ps2-uart-driver module from GitHub (repository doesn't exist, left commented)
+- **Build Result**: SUCCESS
+    - Clean build completed: `zmk.uf2` (122880 bytes)
+    - Memory usage: FLASH 2.91%, RAM 10.26%
+    - Devicetree binding resolved (no vendor prefix errors now, only deprecation warning for 'label')
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**:
+    1. Verify physical trackpoint wiring continuity
+    2. Identify actual PS/2 driver implementation location (not found in current ZMK branch)
+    3. Check if driver binary needs to be built separately or if it's missing entirely
 
 ### 2026-01-07 | First Flash Test - Trackpoint Detection Failure
 - **Commit**: aff0da5 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
