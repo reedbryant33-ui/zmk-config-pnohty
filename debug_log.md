@@ -17,6 +17,22 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-07 | Configuration Cleanup & Build System Validation
+- **Commit**: c1d7c42 | **Result**: FAIL (Build - Undefined Symbols & Compilation)
+- **Objective**: Clean up invalid Kconfig symbols and achieve a successful build.
+- **Technical Changes**:
+    - Removed undefined Kconfig symbols: `CONFIG_ZMK_POINTING_DEVICE`, `CONFIG_INPUT_MOUSE`, `CONFIG_INPUT_MOUSE_PS2_PIO`, `CONFIG_ZMK_INPUT_LISTENER`.
+    - Re-enabled `CONFIG_ZMK_PHYSICAL_LAYOUTS=y` to fix `'layouts' undeclared` error in `physical_layouts.c`.
+    - Environment setup: Activated `(zmk)` conda environment and exported `ZEPHYR_BASE`, `ZEPHYR_SDK_INSTALL_DIR`, `CMAKE_PREFIX_PATH`.
+- **Build Errors**:
+    - **First Attempt**: Kconfig warnings for undefined symbols → Build aborted.
+    - **Second Attempt**: Compilation failed with `'layouts' undeclared` in `zmk/app/src/physical_layouts.c:120`.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION.
+- **Next Steps**: 
+    1. Verify that `CONFIG_ZMK_PHYSICAL_LAYOUTS=y` resolves the layouts compilation error.
+    2. Check if additional keymap/shield configuration is required to populate the layouts array.
+    3. Consider building without pointing device features initially to establish a baseline, then incrementally add features.
+
 ### 2026-01-05 | PIO UART Configuration & Serial Debugging
 - **Commit**: 00134371d135ec9feca498b4fbb16bf20b5a6049 | **Result**: FAIL (Build)
 - **Objective**: First build attempt following new instructions.
