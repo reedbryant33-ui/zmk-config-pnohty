@@ -18,7 +18,22 @@
 ## Active Debugging Entries (Newest First)
 
 ### 2026-01-05 | PIO UART Configuration & Serial Debugging
-- **Commit**: [Insert Last Hash] | **Result**: PASS (Build) / FAIL (Hardware Init)
+- **Commit**: 00134371d135ec9feca498b4fbb16bf20b5a6049 | **Result**: FAIL (Build)
+- **Objective**: First build attempt following new instructions.
+- **Technical Changes**:
+    - Added new instruction file.
+    - Staged and committed specified files.
+- **Lesson Learned**: Build command requires `-s` flag to specify source directory and `_left` or `_right` suffix for the shield. The build is failing due to a Kconfig warning related to `ZMK_PHYSICAL_LAYOUTS`.
+
+### 2026-01-05 | PIO UART Configuration & Serial Debugging
+- **Commit**: d811f2a | **Result**: FAIL (Build)
+- **Objective**: Fix Kconfig warnings and enable pointing device.
+- **Technical Changes**:
+    - Enabled pointing device options in `sweep_bling.conf`.
+    - Commented out `CONFIG_ZMK_PHYSICAL_LAYOUTS=n`.
+- **Lesson Learned**: The build is still failing due to undefined Kconfig symbols related to the pointing device. This suggests a problem with how the Kconfig files are being sourced or defined.
+
+### 2026-01-05 | PIO UART Configuration & Serial Debugging
 - **Objective**: Establish hardware-timed communication and enable logging.
 - **Technical Changes**:
     - Defined PIO UART nodes in overlay for **GP2 (Data)** and **GP3 (Clock)**.
