@@ -1,3 +1,5 @@
+source "zmk/app/Kconfig"
+
 config SHIELD_SWEEP_BLING_LEFT
     def_bool $(shields_list_contains,sweep_bling_left)
 
