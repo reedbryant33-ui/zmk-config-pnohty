@@ -8,7 +8,7 @@
 
 ## Current Status Summary
 - **Matrix**: Functional (Keys working).
-- **Build System**: GitHub Actions (Remote).
+- **Build System**: Local (Fixed SDK path).
 - **Board Target**: `rpi_pico` (Zephyr 3.5.0 compatibility).
 - **Active Driver**: Pete Johanson's PIO UART (Built-in to pointer branch).
 - **Issue**: Firmware builds/flashes, but no trackpoint movement/detection.
@@ -17,7 +17,51 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-07 | Build Fix - Kconfig & Devicetree Conflicts
+- **Commit**: f936dee | **Result**: PASS (Build)
+- **Objective**: Fix build system and re-enable trackpoint PIO UART + PS/2 device definitions.
+- **Technical Changes**:
+    - Removed undefined Kconfig symbols: `CONFIG_ZMK_POINTING_DEVICE` and `CONFIG_INPUT_MOUSE` from `sweep_bling.conf` (these symbols don't exist in this ZMK branch).
+    - Fixed devicetree conflict: Removed `zmk,matrix-transform` from chosen node in overlay—physical layouts and matrix-transform are mutually exclusive.
+    - Corrected Zephyr SDK path to `/Users/reed/zephyr-sdk-0.16.8` (local system, not /opt).
+- **Build Result**: SUCCESS
+    - Firmware built: `zmk.uf2` (122880 bytes)
+    - Memory usage: FLASH 2.91%, RAM 10.26%
+    - Firmware location: `build/zephyr/zmk.uf2`
+    - **Note**: Warning remains about unknown vendor prefix 'petejohanson' (expected—Pete Johanson's driver uses custom binding)
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+
 ### 2026-01-07 | Hardware Physical Verification - Baseline Test
+- **Commit**: 3706150 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
+- **Objective**: Flash baseline firmware and test keyboard matrix and trackpoint functionality.
+- **Test Environment**: 
+    - Firmware: `build/left/zephyr/zmk.uf2` (122880 bytes)
+    - Serial Monitor: WebSerial (VID:PID 1d50:615e)
+    - Test Date**: 2026-01-07
+- **Test Results**:
+    - **USB Connectivity**: ✅ PASS
+      - Device enumerated correctly as OpenMoko HID device
+      - USB configuration completed (Device configured message)
+    - **Keyboard Matrix**: ✅ PASS
+      - All keys register correctly through matrix scanner
+      - Key events properly processed: row/col → position → keycode → HID report
+      - Multiple simultaneous key presses tested (A, D, G, etc.) → all send correctly
+      - Layers functional (momentary_layer working, layer state changes detected)
+      - HID reports transmitted successfully
+    - **Trackpoint**: ❌ FAIL
+      - **No input events detected on GP2 (SDA) or GP3 (SCL)**
+      - PIO UART driver disabled in this build (intentionally deferred)
+      - No PS/2 or input_listener activity in logs
+- **Serial Log Analysis**:
+  - Boot sequence: kscan_matrix_init → USB enumeration → ready
+  - Keyboard matrix debug output confirms all keys working
+  - No errors or warnings in firmware operation
+  - Log snippet: Multiple key press/release cycles show proper HID flow
+- **Hardware Status**: 
+  - **Keyboard Matrix**: VERIFIED WORKING
+  - **Trackpoint**: UNVERIFIED (PIO UART disabled)
+- **Next Steps**:
+    1. Verify physical trackpoint wiring (continuity check on GP2, GP3, GND, VCC)
 - **Commit**: 3706150 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
 - **Objective**: Flash baseline firmware and test keyboard matrix and trackpoint functionality.
 - **Test Environment**: 

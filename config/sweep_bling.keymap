@@ -11,6 +11,10 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/outputs.h>
 
+#ifdef ZMK_POINTING_AVAILABLE
+#include <dt-bindings/zmk/pointing.h>
+#endif
+
 /* LAYERS */
 #define BASE 0
 #define NAV  1

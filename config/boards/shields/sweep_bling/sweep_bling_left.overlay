@@ -6,30 +6,25 @@
         zephyr,shell-uart = &cdc_acm_uart0;
         zmk,physical-layout = &matrix_physical_layout;
         zmk,kscan = &kscan0;
+        zmk,pointing = &trackpoint;
     };
 
-    /* 1. Define the PIO-UART Bus and the PS/2 Device inside it first */
-    // trackpoint_bus: trackpoint_bus {
-    //     compatible = "raspberrypi,pico-uart-pio";
-    //     pinctrl-0 = <&pio_uart_default>;
-    //     pinctrl-names = "default";
-    //     status = "okay";
-    //
-    //     /* Label the device clearly here */
-    //     ps2_device: ps2_device {
-    //         compatible = "petejohanson,ps2-uart";
-    //         status = "okay";
-    //     };
-    // };
-    //
-    // /* 2. Frontend: Link to the label defined above */
-    // trackpoint_listener: input_listener {
-    //     compatible = "zmk,input-listener";
-    //     device = <&ps2_device>; // Use the explicit label
-    //     xy-swap;
-    //     scale-multiplier = <2>;
-    //     scale-divisor = <3>;
-    // };
+    /* PS/2 Trackpoint Bus and Device */
+    ps2_device: ps2_device {
+        compatible = "petejohanson,ps2-uart";
+        label = "PS2_DEVICE";
+        gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>,
+                <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+    };
+
+    /* Trackpoint pointing device listener */
+    trackpoint: input_listener {
+        compatible = "zmk,input-listener";
+        device = <&ps2_device>;
+        xy-swap;
+        scale-multiplier = <2>;
+        scale-divisor = <3>;
+    };
 
     default_transform: matrix_transform {
         compatible = "zmk,matrix-transform";
@@ -70,15 +65,9 @@
     };
 };
 
-/* 3. Define the PIO pins outside the root node */
-// &pio0 {
-//     status = "okay";
-//     interrupt-parent = <&nvic>;
-//     interrupts = <31 1>;
-//     pio_uart_default: pio_uart_default {
-//         pinmux = <2>, <3>; 
-//     };
-// };
+&pio0 {
+    status = "okay";
+};
 
 &i2c0 {
     status = "disabled";
