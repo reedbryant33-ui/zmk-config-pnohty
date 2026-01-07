@@ -17,6 +17,42 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-07 | Hardware Physical Verification - Baseline Test
+- **Commit**: 3706150 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
+- **Objective**: Flash baseline firmware and test keyboard matrix and trackpoint functionality.
+- **Test Environment**: 
+    - Firmware: `build/left/zephyr/zmk.uf2` (122880 bytes)
+    - Serial Monitor: WebSerial (VID:PID 1d50:615e)
+    - Test Date**: 2026-01-07
+- **Test Results**:
+    - **USB Connectivity**: ✅ PASS
+      - Device enumerated correctly as OpenMoko HID device
+      - USB configuration completed (Device configured message)
+    - **Keyboard Matrix**: ✅ PASS
+      - All keys register correctly through matrix scanner
+      - Key events properly processed: row/col → position → keycode → HID report
+      - Multiple simultaneous key presses tested (A, D, G, etc.) → all send correctly
+      - Layers functional (momentary_layer working, layer state changes detected)
+      - HID reports transmitted successfully
+    - **Trackpoint**: ❌ FAIL
+      - **No input events detected on GP2 (SDA) or GP3 (SCL)**
+      - PIO UART driver disabled in this build (intentionally deferred)
+      - No PS/2 or input_listener activity in logs
+- **Serial Log Analysis**:
+  - Boot sequence: kscan_matrix_init → USB enumeration → ready
+  - Keyboard matrix debug output confirms all keys working
+  - No errors or warnings in firmware operation
+  - Log snippet: Multiple key press/release cycles show proper HID flow
+- **Hardware Status**: 
+  - **Keyboard Matrix**: VERIFIED WORKING
+  - **Trackpoint**: UNVERIFIED (PIO UART disabled)
+- **Next Steps**:
+    1. Verify physical trackpoint wiring (continuity check on GP2, GP3, GND, VCC)
+    2. Test trackpoint module separately with logic analyzer if available
+    3. Re-enable PIO UART and PS/2 device definitions in overlay
+    4. Create or locate proper devicetree binding for `petejohanson,ps2-uart`
+    5. Rebuild and retest with trackpoint features enabled
+
 ### 2026-01-07 | Baseline Build Success & Trackpoint Feature Deferral
 - **Commit**: 3706150 | **Result**: PASS (Build)
 - **Objective**: Establish a working baseline build by deferring trackpoint features, then incrementally re-enable them.
@@ -28,12 +64,8 @@
 - **Build Result**: SUCCESS
     - Firmware built: `zmk.uf2` (122880 bytes)
     - Memory usage: FLASH 2.91%, RAM 10.26%
+    - Firmware location: `build/left/zephyr/zmk.uf2`
 - **Hardware Status**: PENDING PHYSICAL VERIFICATION
-- **Next Steps**:
-    1. Flash the baseline firmware to test keyboard matrix functionality.
-    2. Once baseline is confirmed working, re-enable PIO UART and PS/2 device definitions one at a time.
-    3. Verify the `petejohanson,ps2-uart` binding exists in the ZMK devicetree bindings.
-    4. If binding is missing, create custom binding file or use alternative PS/2 driver.
 
 ### 2026-01-07 | Configuration Cleanup & Build System Validation
 - **Commit**: dc1e174 | **Result**: FAIL (Build - Undefined Symbols & Compilation)
