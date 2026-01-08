@@ -7,15 +7,60 @@
 - **GND**: Common ground established
 
 ## Current Status Summary
-- **Matrix**: Functional (Keys working).
+- **Matrix**: Functional (Keys working - VERIFIED).
 - **Build System**: Local (Fixed SDK path, binding files added).
 - **Board Target**: `rpi_pico` (Zephyr 3.5.0 compatibility).
-- **Active Driver**: Pete Johanson's PIO UART (Devicetree binding resolved, driver not yet loaded).
-- **Issue**: Firmware builds successfully, trackpoint device defined in devicetree but driver binary not included/initialized.
+- **Active Driver**: Pete Johanson's PIO UART (Devicetree binding exists, driver implementation MISSING).
+- **Issue**: Firmware builds successfully, trackpoint device defined in devicetree but NO DRIVER CODE - device never initializes on boot.
 
 ---
 
 ## Active Debugging Entries (Newest First)
+
+### 2026-01-08 | Flash Test - Trackpoint Device Not Initializing
+- **Commit**: 37990c2 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
+- **Objective**: Flash firmware to RP2040-Zero and test trackpoint functionality.
+- **Test Environment**:
+    - Firmware: `build/zephyr/zmk.uf2` (122880 bytes) - Built 2026-01-08
+    - Serial Monitor: WebSerial (https://webserial.io/) connected to cu.usbmodem14301
+    - Test Date: 2026-01-08
+- **Test Results**:
+    - **USB Connectivity**: ✅ PASS
+      - Device enumerated correctly as OpenMoko HID device (1d50:615e)
+      - USB resets, configures, reaches state 3 (configured)
+      - Get_selected_transport: "Only USB is ready"
+    - **Keyboard Matrix**: ✅ PASS
+      - Key presses detected and processed
+      - Position 2 (keycode 0x70009) tested and working
+      - Position 0 (keycode 0x70014) tested and working
+      - HID reports sent correctly: "zmk_endpoints_send_report: usage page 0x07"
+    - **Trackpoint**: ❌ FAIL - **DRIVER NOT LOADED**
+      - **NO PS/2 device initialization messages in logs**
+      - **NO input_listener activity**
+      - **NO trackpoint movement detected**
+      - Serial log completely silent on trackpoint (only keyboard matrix events visible)
+- **Root Cause Identified**: PS/2 UART driver implementation is **MISSING** from Pete Johanson's feat/pointers-move-scroll branch
+  - Devicetree binding file exists: `config/dts-bindings/petejohanson,ps2-uart.yaml`
+  - Device is defined in overlay: `sweep_bling_left.overlay` includes ps2_device and input_listener nodes
+  - **BUT**: No actual driver code exists to handle the `petejohanson,ps2-uart` compatible string
+  - Zephyr cannot instantiate the device without matching driver code
+  - Pete's branch has input_listener infrastructure but NO PS/2 driver implementation
+  
+- **Historical Context**: Earlier commits used badjeff's `gpio-ps2` driver (works with mainline ZMK)
+  - Git history shows prior attempts: infused-kim, badjeff drivers were tested
+  - badjeff driver uses compatible `"gpio-ps2"` and scl-gpios/sda-gpios (GPIO bit-banging, not PIO)
+  - These drivers work on mainline but lose Pete's input infrastructure benefits
+  
+- **Decision Needed**: Choose driver strategy
+  1. **Option A**: Switch to mainline ZMK + badjeff PS/2 driver (stable, proven, slower GPIO bit-bang)
+  2. **Option B**: Implement minimal PIO UART PS/2 driver for Pete's branch (complex, fast hardware-timed)
+  3. **Option C**: Use gpio-ps2 compatible on Pete's branch (if compatible, hybrid approach)
+- **Hardware Status**: VERIFIED (Wiring correct - keyboard works, USB works)
+- **Next Steps**:
+    1. Search Pete Johanson's branch for PS/2 driver implementation
+    2. Check if driver is in a module or needs to be implemented separately
+    3. Alternative: Research community PS/2 drivers (infused-kim, badjeff) compatibility with this branch
+    4. Possibly implement minimal PIO UART PS/2 driver based on Pete's examples
 
 ### 2026-01-08 | Build Environment Fix - Environment Variable Inheritance
 - **Commit**: TBD | **Result**: PASS (Build)
