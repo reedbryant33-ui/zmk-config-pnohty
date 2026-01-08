@@ -18,6 +18,29 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-08 | PIO-Based PS/2 Driver - FIRMWARE TEST RESULTS
+- **Commit**: TBD | **Result**: ✅ PASS (Keyboard Matrix Working) | ❌ FAIL (Trackpoint Silent)
+- **Objective**: Test built firmware with the new PIO-based PS/2 driver on hardware.
+- **Hardware Tested**: RP2040-Zero (OpenMoko 1d50:615e)
+- **Test Environment**:
+    - WebSerial by William Kapke (https://webserial.io)
+    - Serial Monitor: cu.usbmodem14301
+    - Test Date: 2026-01-08
+- **Test Results**:
+    - **USB Connectivity**: ✅ PASS - Device enumerated correctly and was responsive.
+    - **Keyboard Matrix**: ✅ PASS - Key presses were detected, processed, and sent HID reports as expected.
+    - **Trackpoint**: ❌ FAIL - NO ACTIVITY DETECTED
+      - The serial logs show no PS/2 device initialization messages.
+      - There is no output related to the PIO driver, `zmk_input_mouse_ps2`, or any trackpoint activity.
+      - The log is identical to the previous test with the GPIO driver, indicating the driver is not being loaded by the Zephyr kernel.
+- **Key Observations**:
+    - The firmware build was successful, which confirms that the Kconfig and CMake configurations are syntactically correct.
+    - The complete absence of any PS/2-related debug output strongly suggests that the driver's `init` function is never being called. This is likely due to an issue with how the driver is registered with the device tree or how the Kconfig options are being resolved.
+- **Next Steps**:
+    1.  Verify that the `compatible = "gpio-ps2-pio"` string in the `sweep_bling_left.overlay` correctly matches the `DT_DRV_COMPAT` in the `ps2_pio.c` driver.
+    2.  Add debug `LOG_INF` messages to the very beginning of the `ps2_pio_init` function to confirm if it's ever being executed.
+    3.  Investigate the Zephyr build output (`build/zephyr/.config`) to confirm that `CONFIG_PS2_PIO` and `CONFIG_PS2` are being enabled as expected.
+
 ### 2026-01-08 | Infused-Kim GPIO-PS2 Driver - FIRMWARE TEST RESULTS
 - **Commit**: GPIO-PS2 variant | **Result**: ✅ PASS (Keyboard Matrix Working, Trackpoint Silent)
 - **Objective**: Test built firmware with infused-kim GPIO-PS2 driver on hardware.
@@ -462,36 +485,6 @@ See [PIO_PS2_DRIVER_EXPLORATION.md](PIO_PS2_DRIVER_EXPLORATION.md) for:
   - **Trackpoint**: UNVERIFIED (PIO UART disabled)
 - **Next Steps**:
     1. Verify physical trackpoint wiring (continuity check on GP2, GP3, GND, VCC)
-- **Commit**: 3706150 | **Result**: PARTIAL (Keyboard Matrix: PASS, Trackpoint: FAIL)
-- **Objective**: Flash baseline firmware and test keyboard matrix and trackpoint functionality.
-- **Test Environment**: 
-    - Firmware: `build/left/zephyr/zmk.uf2` (122880 bytes)
-    - Serial Monitor: WebSerial (VID:PID 1d50:615e)
-    - Test Date**: 2026-01-07
-- **Test Results**:
-    - **USB Connectivity**: ✅ PASS
-      - Device enumerated correctly as OpenMoko HID device
-      - USB configuration completed (Device configured message)
-    - **Keyboard Matrix**: ✅ PASS
-      - All keys register correctly through matrix scanner
-      - Key events properly processed: row/col → position → keycode → HID report
-      - Multiple simultaneous key presses tested (A, D, G, etc.) → all send correctly
-      - Layers functional (momentary_layer working, layer state changes detected)
-      - HID reports transmitted successfully
-    - **Trackpoint**: ❌ FAIL
-      - **No input events detected on GP2 (SDA) or GP3 (SCL)**
-      - PIO UART driver disabled in this build (intentionally deferred)
-      - No PS/2 or input_listener activity in logs
-- **Serial Log Analysis**:
-  - Boot sequence: kscan_matrix_init → USB enumeration → ready
-  - Keyboard matrix debug output confirms all keys working
-  - No errors or warnings in firmware operation
-  - Log snippet: Multiple key press/release cycles show proper HID flow
-- **Hardware Status**: 
-  - **Keyboard Matrix**: VERIFIED WORKING
-  - **Trackpoint**: UNVERIFIED (PIO UART disabled)
-- **Next Steps**:
-    1. Verify physical trackpoint wiring (continuity check on GP2, GP3, GND, VCC)
     2. Test trackpoint module separately with logic analyzer if available
     3. Re-enable PIO UART and PS/2 device definitions in overlay
     4. Create or locate proper devicetree binding for `petejohanson,ps2-uart`
@@ -526,8 +519,6 @@ See [PIO_PS2_DRIVER_EXPLORATION.md](PIO_PS2_DRIVER_EXPLORATION.md) for:
 
 ### 2026-01-05 | PIO UART Configuration & Serial Debugging
 - **Commit**: 00134371d135ec9feca498b4fbb16bf20b5a6049 | **Result**: FAIL (Build)
-
-### 2026-01-05 | PIO UART Configuration & Serial Debugging
 - **Objective**: Establish hardware-timed communication and enable logging.
 - **Technical Changes**:
     - Defined PIO UART nodes in overlay for **GP2 (Data)** and **GP3 (Clock)**.
@@ -554,3 +545,19 @@ See [PIO_PS2_DRIVER_EXPLORATION.md](PIO_PS2_DRIVER_EXPLORATION.md) for:
 ### 4. Early PIO Integration
 - **Outcome**: SUCCESS (Build Path).
 - **Lesson Learned**: Zephyr 3.5.0 (Pete's branch) requires specific `pinctrl` syntax for PIO that differs from mainline Zephyr. Manual pinmuxing in the overlay is more reliable.
+
+### 2026-01-08 | PIO-Based PS/2 Driver Implementation - BUILD SUCCESS
+- **Commit**: TBD | **Result**: ✅ PASS (Build Complete, Ready to Flash)
+- **Objective**: Implement the PIO-based PS/2 driver as detailed in PIO_PS2_DRIVER_EXPLORATION.md.
+- **Technical Changes**:
+    - Structured the `ps2` driver as a valid Zephyr module, with `zephyr/module.yml`, `zephyr/CMakeLists.txt`, and `Kconfig` files.
+    - Updated `sweep_bling.conf` to enable `CONFIG_PS2_PIO`.
+    - Updated `sweep_bling_left.overlay` to use the `gpio-ps2-pio` compatible.
+- **Build Result**: ✅ SUCCESS
+    - Firmware built: `zmk.uf2`
+    - No compilation errors.
+- **Hardware Status**: READY FOR TESTING
+- **Next Steps**:
+    1. **IMMEDIATE**: Flash firmware to RP2020-Zero.
+    2. Monitor serial output for PS/2 device initialization messages.
+    3. Test trackpoint cursor movement.
