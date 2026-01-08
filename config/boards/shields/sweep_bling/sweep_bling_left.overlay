@@ -9,15 +9,20 @@
         zmk,pointing = &trackpoint;
     };
 
-    /* Infused-Kim PS/2 Trackpoint (PIO-based, hardware-timed) */
-    trackpoint: ps2_device {
-        compatible = "zmk,ps2";
+    /* Infused-Kim PS/2 Trackpoint (GPIO bit-banging driver) */
+    trackpoint_device: ps2_device {
+        compatible = "gpio-ps2";
         label = "TRACKPOINT";
         scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
         sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-        /* RP2040 PIO configuration for low-jitter PS/2 timing */
-        pio = <&pio0>;
-        /* Optional: sensitivity tuning (default typically works well) */
+    };
+
+    /* PS/2 Mouse Input Listener (processes trackpoint events and sends HID reports) */
+    trackpoint: zmk_input_mouse_ps2 {
+        compatible = "zmk,input-mouse-ps2";
+        ps2-device = <&trackpoint_device>;
+        /* Sensitivity tuning - default is 128, range 0-255 */
+        /* tp-sensitivity = <128>; */
     };
 
     default_transform: matrix_transform {
