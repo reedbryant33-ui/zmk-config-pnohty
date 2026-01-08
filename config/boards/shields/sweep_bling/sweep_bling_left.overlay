@@ -9,12 +9,14 @@
         zmk,pointing = &trackpoint;
     };
 
-    /* Infused-Kim PS/2 Trackpoint (GPIO bit-banging driver) */
+    /* PIO PS/2 Trackpoint Driver */
     trackpoint_device: ps2_device {
-        compatible = "gpio-ps2";
+        compatible = "gpio-ps2-pio";
         label = "TRACKPOINT";
         scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
         sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        pio-device = <&pio0>;
+        pio-sm = <0>;
     };
 
     /* PS/2 Mouse Input Listener (processes trackpoint events and sends HID reports) */
