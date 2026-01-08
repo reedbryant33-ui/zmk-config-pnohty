@@ -1,0 +1,8 @@
+# dts-bindings/petejohanson,ps2-uart.yaml
+compatible: "petejohanson,ps2-uart"
+description: "Pete Johanson's PS/2 UART driver for ZMK"
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: "SDA and SCL GPIO pins for the PS/2 device"

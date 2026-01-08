@@ -1,0 +1,15 @@
+; PS/2 Transmit State Machine
+.program ps2_tx
+; Side-set pin 0 is SCL
+; OUT pin 0 is SDA
+
+    set x, 10           ; Load counter for 11 bits total
+    pull                ; Get 8-bit data from TX FIFO
+                        ; a 1 start bit is prepended
+                        ; an odd parity bit is calculated and appended
+                        ; a 1 stop bit is appended
+
+; Loop for 11 bits
+bitloop:
+    out pins, 1         ; Output 1 bit of data to SDA pin
+    jmp x--, bitloop    ; Decrement counter and loop

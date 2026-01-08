@@ -1,0 +1,13 @@
+; PS/2 Receive State Machine
+; Wait for clock line to go low (START condition)
+    wait 0 gpio SCL_PIN
+
+; Loop 11 times for START + 8DATA + PARITY + STOP bits
+.wrap_target
+    wait 1 gpio SCL_PIN    ; Wait for clock HIGH
+    in pins, 1             ; Read 1 bit from SDA into ISR
+    wait 0 gpio SCL_PIN    ; Wait for clock LOW
+.wrap
+
+; When ISR reaches 32 bits, push to RX FIFO
+; At 11 bits per frame, collects ~3 frames per 32-bit word

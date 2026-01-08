@@ -1,0 +1,18 @@
+# For PS/2 PIO variant selection
+
+if PS2
+
+config PS2_PIO
+    bool "PS/2 GPIO PIO bit-banging driver (RP2040)"
+    select HAS_DTS_GPIO
+    help
+      Enable PS/2 driver using RP2040 PIO (Programmable I/O).
+      This approach uses the PIO state machines for deterministic
+      timing instead of CPU-driven GPIO interrupts.
+      
+config PS2_PIO_INIT_PRIORITY
+    int "PS/2 PIO driver initialization priority"
+    default 45
+    depends on PS2_PIO
+
+endif # PS2
