@@ -18,6 +18,29 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-08 | PIO-Based PS/2 Driver (with logging) - FIRMWARE TEST RESULTS
+- **Commit**: 7c9a19a | **Result**: ✅ PASS (Keyboard Matrix Working) | ❌ FAIL (Trackpoint Silent)
+- **Objective**: Test firmware with added logging to diagnose PIO driver initialization.
+- **Hardware Tested**: RP2040-Zero (OpenMoko 1d50:615e)
+- **Test Environment**:
+    - WebSerial by William Kapke (https://webserial.io)
+    - Serial Monitor: cu.usbmodem14301
+    - Test Date: 2026-01-08
+- **Test Results**:
+    - **USB Connectivity**: ✅ PASS - Device enumerated correctly.
+    - **Keyboard Matrix**: ✅ PASS - Key presses detected and processed correctly.
+    - **Trackpoint**: ❌ FAIL - NO ACTIVITY DETECTED
+      - The "Initializing PS/2 PIO driver" log message was **NOT** present in the serial output.
+      - This confirms that the `ps2_pio_init` function is not being called by the Zephyr kernel.
+- **Key Observations**:
+    - The issue is not with the driver code itself, but with the configuration that loads it. The build system is not enabling the necessary Kconfig symbols to include the driver in the build.
+    - The build log warning `warning: PS2_PIO ... was assigned the value 'y' but got the value 'n'. Check these unsatisfied dependencies: PS2 (=n)` is the key indicator. `CONFIG_PS2_PIO` cannot be enabled because its dependency, `CONFIG_PS2`, is not enabled.
+- **Next Steps**:
+    1.  Investigate why `CONFIG_PS2` is not being enabled, even though the devicetree contains a `zmk,input-mouse-ps2` compatible node, which should select it.
+    2.  Examine the `build/zephyr/.config` file to see the final computed Kconfig values.
+    3.  Find the Kconfig file for `ZMK_INPUT_MOUSE_PS2` to understand its dependencies.
+    4.  Correct the Kconfig setup to ensure the entire dependency chain is satisfied.
+
 ### 2026-01-08 | PIO-Based PS/2 Driver - FIRMWARE TEST RESULTS
 - **Commit**: TBD | **Result**: ✅ PASS (Keyboard Matrix Working) | ❌ FAIL (Trackpoint Silent)
 - **Objective**: Test built firmware with the new PIO-based PS/2 driver on hardware.
@@ -300,7 +323,7 @@ See [PIO_PS2_DRIVER_EXPLORATION.md](PIO_PS2_DRIVER_EXPLORATION.md) for:
 - **Kconfig Auto-Enable Chain**:
     1. Devicetree has `compatible = "gpio-ps2"` node
     2. `PS2_GPIO` auto-enabled by `dt_compat_enabled(gpio-ps2)` in Kconfig.gpio
-    3. `PS2` selected by `ZMK_INPUT_MOUSE_PS2` in input driver Kconfig
+    3. `PS2` selected by `CONFIG_ZMK_INPUT_MOUSE_PS2` in input driver Kconfig
     4. All symbols properly resolved - no manual Kconfig entries needed
 - **Hardware Status**: READY FOR TESTING  
 - **Next Steps**:
