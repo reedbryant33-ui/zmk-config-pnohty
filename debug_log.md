@@ -17,6 +17,26 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-08 | Build Environment Fix - Environment Variable Inheritance
+- **Commit**: TBD | **Result**: PASS (Build)
+- **Objective**: Fix build system environment variables to properly pass to cmake subprocess and achieve clean build.
+- **Technical Changes**:
+    - Identified root cause: Environment variables set in shell were not being inherited by west subprocess.
+    - Solution: Use `python3 -m west` with environment variables set directly in the command: `ZEPHYR_BASE=/... CMAKE_PREFIX_PATH=/... python3 -m west build ...`
+    - Correct SDK path: `/Users/reed/zephyr-sdk-0.16.8` (not `/opt/zephyr-sdk-0.16.8`)
+    - Correct CMAKE_PREFIX_PATH: `/Users/reed/zephyr-sdk-0.16.8/cmake:/Users/reed/dev/zmk-config-pnohty/zephyr/share/zephyr-package/cmake`
+- **Build Result**: SUCCESS
+    - Clean build completed: `zmk.uf2` (122880 bytes)
+    - Memory usage: FLASH 2.91%, RAM 10.26%
+    - Devicetree binding resolved (only deprecation warning for 'label', expected)
+    - No build errors
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION (Ready for flashing)
+- **Next Steps**:
+    1. Flash firmware to RP2040-Zero
+    2. Test trackpoint functionality with serial monitor
+    3. Verify PS/2 device initialization in boot logs
+    4. Test cursor movement
+
 ### 2026-01-07 | PS/2 UART Binding File Creation & Clean Build
 - **Commit**: 06e621c | **Result**: PASS (Build)
 - **Objective**: Create devicetree binding for petejohanson,ps2-uart and establish clean build path.
