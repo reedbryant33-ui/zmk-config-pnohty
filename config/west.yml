@@ -4,13 +4,16 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: petejohanson
       url-base: https://github.com/petejohanson
+    - name: infused-kim
+      url-base: https://github.com/infused-kim
   projects:
     - name: zmk
       remote: petejohanson
       revision: feat/pointers-move-scroll # This is the "God Tier" mouse branch
       import: app/west.yml
-    #- name: zmk-ps2-uart-driver
-      #remote: petejohanson
-      #revision: main
+    - name: kb_zmk_ps2_mouse_trackpoint_driver
+      remote: infused-kim
+      revision: main
+      path: modules/drivers/ps2
   self:
     path: config

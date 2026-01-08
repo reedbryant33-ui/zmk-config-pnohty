@@ -9,21 +9,15 @@
         zmk,pointing = &trackpoint;
     };
 
-    /* PS/2 Trackpoint Bus and Device */
-    ps2_device: ps2_device {
-        compatible = "petejohanson,ps2-uart";
-        label = "PS2_DEVICE";
-        gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>,
-                <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
-    };
-
-    /* Trackpoint pointing device listener */
-    trackpoint: input_listener {
-        compatible = "zmk,input-listener";
-        device = <&ps2_device>;
-        xy-swap;
-        scale-multiplier = <2>;
-        scale-divisor = <3>;
+    /* Infused-Kim PS/2 Trackpoint (PIO-based, hardware-timed) */
+    trackpoint: ps2_device {
+        compatible = "zmk,ps2";
+        label = "TRACKPOINT";
+        scl-gpios = <&gpio0 3 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        sda-gpios = <&gpio0 2 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        /* RP2040 PIO configuration for low-jitter PS/2 timing */
+        pio = <&pio0>;
+        /* Optional: sensitivity tuning (default typically works well) */
     };
 
     default_transform: matrix_transform {
