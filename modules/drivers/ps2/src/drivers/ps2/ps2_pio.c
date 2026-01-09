@@ -21,6 +21,7 @@ struct ps2_pio_config {
 };
 
 struct ps2_pio_data {
+    const struct device *dev;
     ps2_callback_t callback;
     PIO pio;
     uint pio_offset_rx;
@@ -49,8 +50,6 @@ static void ps2_pio_configure_rx(const struct device *dev) {
     
     // Map SCL to Wait Pin (wait 0 gpio SCL)
     // Map SDA to In Pin (in pins, 1)
-    // NOTE: The PIO assembly expects SCL at a specific location for 'wait'
-    // and SDA at a specific location for 'in'.
     
     // Set In pin to SDA
     sm_config_set_in_pins(&sm_config, config->sda_gpio.pin);
@@ -94,6 +93,8 @@ static int ps2_pio_read(const struct device *dev, uint8_t *value) {
     return -ENOTSUP;
 }
 
+static void ps2_pio_isr(const struct device *dev);
+
 static int ps2_pio_enable_callback(const struct device *dev) {
     struct ps2_pio_data *data = dev->data;
     const struct ps2_pio_config *config = dev->config;
@@ -118,39 +119,76 @@ static int ps2_pio_disable_callback(const struct device *dev) {
 
 static void ps2_pio_rx_work_handler(struct k_work *work) {
     struct ps2_pio_data *data = container_of(work, struct ps2_pio_data, rx_work);
-    const struct device *dev = NULL; // Need a way to get dev from data... typically stored in data
-    // Assuming single instance for now or we need a backpointer
-    
-    // Hack: reconstruct dev pointer or restructure data
-    // For this implementation, let's just use the stored callback
     
     // Read from FIFO
-    while (!pio_sm_is_rx_fifo_empty(data->pio, 0)) { // 0 is placeholder for sm
-        uint32_t raw_data = pio_sm_get(data->pio, 0);
+    while (!pio_sm_is_rx_fifo_empty(data->pio, data->dev->config->pio_sm)) {
+        uint32_t raw_data = pio_sm_get(data->pio, data->dev->config->pio_sm);
         
-        // Process bits...
-        // The raw_data contains the 11-bit frame (or parts of it)
-        // ps2_rx program pushes 32 bits, but we only shift 11
-        // We need to adjust the PIO program to push per frame or mask here
+        // raw_data is 32 bits, but our PIO loop collects 11 bits.
+        // Bit 0: Start (Always 0)
+        // Bit 1-8: Data (LSB first)
+        // Bit 9: Parity (Odd)
+        // Bit 10: Stop (Always 1)
         
-        // TODO: Frame reconstruction
-        // For now, let's just log
-        LOG_DBG("PIO RX: %x", raw_data);
+        uint8_t start_bit = raw_data & 0x1;
+        uint8_t data_byte = (raw_data >> 1) & 0xFF;
+        uint8_t parity_bit = (raw_data >> 9) & 0x1;
+        uint8_t stop_bit = (raw_data >> 10) & 0x1;
+        
+        // Validation
+        if (start_bit != 0) {
+             LOG_WRN("PS/2 Frame Error: Start bit not 0 (Raw: %x)", raw_data);
+             continue; 
+        }
+        
+        if (stop_bit != 1) {
+            LOG_WRN("PS/2 Frame Error: Stop bit not 1 (Raw: %x)", raw_data);
+            continue;
+        }
+        
+        // Parity Check (Odd Parity)
+        // # of 1s in (Data + Parity) must be Odd.
+        // So (popcount(Data) + Parity) % 2 == 1
+        
+        int ones = 0;
+        for (int i=0; i<8; i++) {
+            if ((data_byte >> i) & 1) ones++;
+        }
+        
+        if ((ones + parity_bit) % 2 != 1) {
+            LOG_WRN("PS/2 Parity Error (Data: %x, P: %d)", data_byte, parity_bit);
+            continue;
+        }
+        
+        // Valid Frame!
+        LOG_DBG("PS/2 Valid Byte: %02x", data_byte);
         
         if (data->callback) {
-             // data->callback(dev, byte_value);
+             data->callback(data->dev, data_byte);
         }
     }
+}
+
+// Modified work handler to re-enable IRQ
+static void ps2_pio_rx_work_handler_wrapper(struct k_work *work) {
+    struct ps2_pio_data *data = container_of(work, struct ps2_pio_data, rx_work);
+    const struct ps2_pio_config *config = data->dev->config; // Access config via stored dev pointer
+
+    ps2_pio_rx_work_handler(work); // Process data
+    
+    // Re-enable IRQ
+    pio_set_irq0_source_enabled(data->pio, pis_sm0_rx_fifo_not_empty + config->pio_sm, true);
 }
 
 // --- ISR ---
 
 static void ps2_pio_isr(const struct device *dev) {
     struct ps2_pio_data *data = dev->data;
-    // Clear IRQ?
+    
+    // Disable IRQ, Submit Work
+    pio_set_irq0_source_enabled(data->pio, pis_sm0_rx_fifo_not_empty + ((struct ps2_pio_config*)dev->config)->pio_sm, false);
     k_work_submit(&data->rx_work);
 }
-
 
 // --- Init ---
 
@@ -158,23 +196,27 @@ static int ps2_pio_init(const struct device *dev) {
     const struct ps2_pio_config *config = dev->config;
     struct ps2_pio_data *data = dev->data;
 
+    data->dev = dev; // Store backpointer
     data->pio = pio_rpi_pico_get_pio(config->pio_dev);
     if (!data->pio) {
         LOG_ERR("Failed to get PIO instance");
         return -ENODEV;
     }
 
-    k_work_init(&data->rx_work, ps2_pio_rx_work_handler);
+    k_work_init(&data->rx_work, ps2_pio_rx_work_handler_wrapper);
 
     ps2_pio_configure_rx(dev);
 
-    // Setup interrupt (this part needs Zephyr-specific IRQ connection which is tricky for shared PIO)
-    // Zephyr's PIO driver handles the NVIC IRQ, we just need to register a callback?
-    // Or we poll?
-    // pio_rpi_pico driver doesn't seem to expose a generic IRQ callback mechanism easily.
-    // We might have to poll for now or hook into the IRQ.
+    // Setup interrupt
+    // Hook PIO0_IRQ_0.
     
-    // For MVP: Polling via timer? Or just check if Zephyr exposes IRQ.
+    IRQ_CONNECT(DT_IRQ_BY_NAME(DT_NODELABEL(pio0), pio0, irq), 
+                DT_IRQ_BY_NAME(DT_NODELABEL(pio0), pio0, priority),
+                ps2_pio_isr,
+                DEVICE_DT_GET(DT_NODELABEL(trackpoint_device)), // Pass OUR device
+                0);
+    
+    irq_enable(DT_IRQ_BY_NAME(DT_NODELABEL(pio0), pio0, irq));
     
     return 0;
 }
