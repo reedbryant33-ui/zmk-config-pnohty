@@ -2,7 +2,7 @@
 ; Based on Research & Implementation Strategy
 
 .program ps2_rx
-.side_set 0
+; .side_set 0
 
 ; Wait for clock low (Start bit)
 ; Clock is on pin 0 (relative to configured base)
@@ -20,5 +20,3 @@ loop:
     in pins, 1           ; Sample Data (GP2)
     wait 0 gpio 3        ; Wait for Clock (GP3) to go LOW (ready for next bit)
     jmp x--, loop        ; Loop until all 11 bits are captured
-
-    push                 ; Push 32-bit ISR to RX FIFO (auto-push can also be configured)

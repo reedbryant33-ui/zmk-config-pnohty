@@ -27,10 +27,10 @@
     set pindirs, 3 side 0b11 ; Set both pins as outputs, initially High (Idle)
     
     ; 1. Pull Clock Low for >100us
-    set pins, 2    side 0b01 [31] ; Clock Low (bit 1=0), Data High (bit 0=1). Delay.
-    nop            side 0b01 [31] ; More delay... (need enough cycles for >100us)
-    nop            side 0b01 [31]
-    nop            side 0b01 [31] 
+    set pins, 2    side 0b01 [3] ; Clock Low (bit 1=0), Data High (bit 0=1). Delay.
+    nop            side 0b01 [3] ; More delay... (need enough cycles for >100us)
+    nop            side 0b01 [3]
+    nop            side 0b01 [3] 
     
     ; 2. Pull Data Low, then release Clock
     set pins, 0    side 0b00      ; Data Low (bit 0=0), Clock Low (bit 1=0)

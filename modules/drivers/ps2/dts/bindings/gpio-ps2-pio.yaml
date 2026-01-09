@@ -1,0 +1,26 @@
+description: GPIO PS/2 PIO driver for RP2040
+
+compatible: "gpio-ps2-pio"
+
+include: base.yaml
+
+properties:
+  scl-gpios:
+    type: phandle-array
+    required: true
+    description: GPIO pin used for PS/2 Clock (SCL)
+
+  sda-gpios:
+    type: phandle-array
+    required: true
+    description: GPIO pin used for PS/2 Data (SDA)
+
+  pio-device:
+    type: phandle
+    required: true
+    description: Reference to the PIO device (pio0 or pio1)
+
+  pio-sm:
+    type: int
+    required: true
+    description: PIO state machine index (0-3)

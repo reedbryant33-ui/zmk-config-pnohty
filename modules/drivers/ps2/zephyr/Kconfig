@@ -1,3 +1,6 @@
+# Source parent Kconfig to get ZMK_INPUT_MOUSE_PS2 definition
+rsource "../Kconfig"
+
 # For PS/2 PIO variant selection
 
 if PS2

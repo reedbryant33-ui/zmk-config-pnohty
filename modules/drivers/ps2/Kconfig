@@ -13,3 +13,10 @@ config PS2_PIO
       Enable PS/2 driver using RP2040 PIO (Programmable I/O).
       This approach uses the PIO state machines for deterministic
       timing instead of CPU-driven GPIO interrupts.
+
+config PS2_PIO_INIT_PRIORITY
+    int "PS/2 PIO init priority"
+    default 45
+    depends on PS2_PIO
+    help
+      Initialization priority for the PS/2 PIO driver.

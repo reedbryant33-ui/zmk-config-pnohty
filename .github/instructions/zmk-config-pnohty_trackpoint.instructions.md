@@ -25,7 +25,6 @@ The agent should explore these repositories for driver implementations, board de
     - [petejohanson/zmk (branch: feat/pointers-move-scroll)](https://github.com/petejohanson/zmk/tree/feat/pointers-move-scroll): Pete's active development branch for the ZMK pointing subsystem. This is the source for the `CONFIG_ZMK_POINTING` features.
 
 * **Hardware & Shield Reference:**
-    - [Holykeebs ZMK Config](https://github.com/holykeebs/zmk-config): Contains the `sweep_bling` shield definitions and `waveshare_rp2040_zero` board files used by Holykeebs hardware.
     - [idank/keyboards](https://github.com/idank/keyboards/tree/main/sweeq%20mx): The original hardware repo for the Sweeq MX PCB.
 
 * **Input Processing & Behaviors:**

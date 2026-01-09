@@ -1,8 +1,12 @@
 # Compile PIO programs (requires pioasm tool)
-# We assume pioasm is available in the path or SDK
 find_program(PIOASM pioasm)
 if(NOT PIOASM)
-    message(WARNING "pioasm not found, PIO driver may not build")
+    if(CONFIG_PS2_PIO)
+        message(FATAL_ERROR "pioasm not found but CONFIG_PS2_PIO is enabled. "
+                            "Please ensure pioasm is in your PATH or set -DPIOASM=<path>")
+    else()
+        message(WARNING "pioasm not found, PIO driver may not build if enabled later")
+    endif()
 endif()
 
 # Generate headers from PIO assembly
@@ -32,3 +36,4 @@ endif()
 
 zephyr_library_sources_ifdef(CONFIG_PS2_UART src/drivers/ps2/ps2_uart.c)
 zephyr_library_sources_ifdef(CONFIG_PS2_GPIO src/drivers/ps2/ps2_gpio.c)
+zephyr_library_sources_ifdef(CONFIG_ZMK_INPUT_MOUSE_PS2 src/zmk_input_mouse_ps2.c)

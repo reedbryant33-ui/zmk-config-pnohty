@@ -1,0 +1,11 @@
+description: ZMK PS/2 Mouse Input Driver
+
+compatible: "zmk,input-mouse-ps2"
+
+include: base.yaml
+
+properties:
+  ps2-device:
+    type: phandle
+    required: true
+    description: The PS/2 driver device
