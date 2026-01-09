@@ -19,7 +19,7 @@
 ## Active Debugging Entries (Newest First)
 
 ### 2026-01-09 | PIO-Based PS/2 Driver - Physical Test 4
-- **Commit**: [TBD] | **Result**: 🟡 PROGRESS (Data Captured)
+- **Commit**: `ea6f056` | **Result**: 🟡 PROGRESS (Data Captured)
 - **Objective**: Verify if bit-banged TX implementation triggers trackpoint responses.
 - **Observations**:
     - **Logs**:
