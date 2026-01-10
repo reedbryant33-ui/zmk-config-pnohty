@@ -18,6 +18,20 @@
 
 ## Active Debugging Entries (Newest First)
 
+### 2026-01-10 | Workspace Migration & Skills Setup
+- **Commit**: Pending | **Result**: ✅ SUCCESS
+- **Objective**: Transition workspace to "Skill-Enabled" architecture. Create `.roo/skills` and `.github/skills` for Trackpoint and Build procedures. Update `.clinerules` with strict agent protocols.
+- **Observations**:
+    - Creating skill files for `zmk-trackpoint` and `zmk-build`.
+    - Mirroring skills to `.github` for cross-agent compatibility.
+    - Updating `.clinerules` to enforce "No Filler" and strict logging.
+    - **Verification**: 
+        - `.clinerules` updated with new protocols.
+        - `.roo/skills/zmk-trackpoint/SKILL.md` exists.
+        - `.roo/skills/zmk-build/SKILL.md` exists.
+        - `.github/skills/zmk-trackpoint/SKILL.md` exists.
+        - `.github/skills/zmk-build/SKILL.md` exists.
+
 ### 2026-01-09 | PIO-Based PS/2 Driver - Physical Test 4
 - **Commit**: `ea6f056` | **Result**: 🟡 PROGRESS (Data Captured)
 - **Objective**: Verify if bit-banged TX implementation triggers trackpoint responses.
@@ -127,5 +141,115 @@
         2. Device Tree compatibility string mismatch (though they look correct).
         3. Driver initialization priority/level issue.
         4. Logs being filtered out (though `<inf>` should show up by default).
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Phase 1 & 2 Execution
+- **Commit**: Pending | **Result**: ✅ BUILD SUCCESS
+- **Objective**: Execute Phase 1 (PIO Program Fix) and Phase 2 (Driver Logging & Verification) of `PIO_FIX_GAMEPLAN.md` and build the firmware.
+- **Observations**:
+    - PIO program `ps2_pio_rx.pio` updated to sample on clock low and push after stop bit.
+    - `LOG_INF("PIO RX RAW: 0x%08x", rx_raw);` added to `ps2_pio_isr` in `ps2_pio.c`.
+    - The build completed successfully, generating `zmk.uf2`.
+    - Warnings observed: `unused variable 'data'` in `ps2_pio_enable_callback` and `ps2_pio_disable_callback`, deprecated `label` in DTS bindings, and `No SOURCES given to Zephyr library: drivers__ps2`. These are non-critical warnings.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: Flash the `zmk.uf2` firmware and monitor serial output for `PIO RX RAW` logs.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 5
+- **Commit**: Pending | **Result**: ❌ FAIL (Incorrect Start Bit, Data 0x00)
+- **Objective**: Verify PIO program and C-level data extraction with detailed logging after Phase 1 & 2.
+- **Observations**:
+    - `ps2_pio_write: Sending 0xf4` confirms TX functionality.
+    - `PIO RX RAW` values (e.g., `0xfe800000`, `0xca000000`, `0xffc00000`) are consistently observed.
+    - **Critical Issue**: The most significant bit of `rx_raw` (interpreted as the Start bit due to `sm_config_set_in_shift(..., true, ...)` for MSB-first shifting) is **always 1**. PS/2 protocol dictates the Start bit must be 0.
+    - The `ps2_pio_work_handler: Processing byte: 0x00` and `PS2 Sync Error: Byte 1 bit 3 not set (00)` indicate that the extracted data byte is `0x00` and the high-level PS/2 input processor is not receiving valid data.
+    - **Conclusion**: The PIO state machine is receiving data, but the frames are fundamentally malformed at the hardware level (Start bit is 1). This points to a synchronization problem within the PIO program itself, or an unexpected signal on the data line, rather than just an incorrect C-level parsing of a valid raw frame.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: 
+    1. Correct C-level data extraction in `ps2_pio.c` to properly decode MSB-first shifted data and add more detailed logging (Start, Parity, Stop bits).
+    2. Rebuild and re-flash to verify the extracted bits. This will help confirm if the PIO is *actually* reading a '1' for the start bit, or if our interpretation of `rx_raw` combined with `sm_config_set_in_shift` is still flawed. If Start is still '1', then the PIO program or physical wiring needs a deeper look.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Build after Data Extraction & Logging Fix
+- **Commit**: Pending | **Result**: ✅ BUILD SUCCESS
+- **Objective**: Rebuild firmware after correcting C-level data extraction and adding detailed bit-level logging in `ps2_pio.c`.
+- **Observations**:
+    - The build completed successfully, generating `zmk.uf2`.
+    - The same non-critical warnings regarding `unused variable 'data'`, deprecated `label` in DTS bindings, and `No SOURCES given to Zephyr library: drivers__ps2` were observed. These are expected and do not prevent the build.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: Flash the `zmk.uf2` firmware and monitor serial output. Pay close attention to the new `PIO RX Decoded: Start=0x%x, Data=0x%02x, Parity=0x%x, Stop=0x%x` logs to precisely identify the values of each bit in the received frames.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 6
+- **Commit**: Pending | **Result**: ❌ FAIL (Mixed Start/Stop Bits, Data 0x00)
+- **Objective**: Verify PIO program and C-level data extraction with detailed logging after LSB-first interpretation.
+- **Observations**:
+    - `ps2_pio_write: Sending 0xf4` continues to confirm TX functionality.
+    - `PIO RX RAW` values are still observed.
+    - `PIO RX Decoded` now shows some frames with `Start=0x0` (correct) but many still with `Start=0x1` (incorrect).
+    - Even when `Start=0x0`, a frequent warning `PS/2 Protocol Warning: Stop bit is 0 (expected 1)` is observed.
+    - The `ps2_pio_work_handler: Processing byte: 0x00` and `PS2 Sync Error: Byte 1 bit 3 not set (00)` persist.
+    - **Conclusion**: The previous C-level data extraction was indeed incorrect for LSB-first shifting. While the detailed logging now better reflects the PIO's raw output, the fundamental issue of malformed Start and Stop bits from the PIO persists. This strongly indicates a timing or sampling problem within the PIO program (`ps2_pio_rx.pio`) itself. The PIO is not consistently synchronizing to the PS/2 data frames correctly.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: Re-evaluate and potentially modify the `ps2_pio_rx.pio` assembly code. The inconsistent Start and Stop bits suggest the PIO is not capturing the bits at the correct points in the PS/2 clock cycle. Introducing a small delay (NOP) for sampling or adjusting `wait` conditions might be necessary to stabilize bit capture. Also, confirm the clock and data pin definitions in the PIO program against the hardware configuration.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Build after NOP insertion
+- **Commit**: Pending | **Result**: ✅ BUILD SUCCESS
+- **Objective**: Rebuild firmware after introducing NOP delays in `ps2_pio_rx.pio` for improved bit sampling stability.
+- **Observations**:
+    - The build completed successfully, generating `zmk.uf2`.
+    - The same non-critical warnings regarding `unused variable 'data'`, deprecated `label` in DTS bindings, and `No SOURCES given to Zephyr library: drivers__ps2` were observed. These are expected and do not prevent the build.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: Flash the `zmk.uf2` firmware and monitor serial output. Observe the `PIO RX Decoded` logs to see if the Start and Stop bit consistency has improved with the `nop` delays.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 7
+- **Commit**: Pending | **Result**: PENDING PHYSICAL VERIFICATION
+- **Objective**: Verify PIO program with corrected 11-bit sampling loop and fixed CMake source inclusion.
+- **Observations**:
+    - Confirmed `ps2_pio.c.obj` is finally being generated and linked.
+    - PIO program updated to a cleaner loop: `wait 0 gpio 3` -> `in pins, 1` -> `wait 1` -> `wait 0` (repeat).
+    - Added `in null, 21` to align 11 bits to the LSBs of the 32-bit FIFO word.
+    - Corrected C-level decoding to match the new bit alignment.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: User to flash `zmk.uf2` and provide serial logs to confirm if `Start=0` and `Stop=1` are consistently captured.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 8
+- **Commit**: Pending | **Result**: PENDING PHYSICAL VERIFICATION
+- **Objective**: Align PIO capture and C-level decoding based on RAW capture analysis.
+- **Observations**:
+    - Analyzed `rx_raw` logs (e.g., `0xfe800000`) and confirmed they contain valid PS/2 frames shifted to the MSB bits (31:21).
+    - Simplified `ps2_pio_rx.pio` to a standard loop with `autopush` at 11 bits.
+    - Updated `ps2_pio.c` to shift `rx_raw >>= 21` before decoding, ensuring `Start=0` and `Stop=1` are aligned to bits 0 and 10.
+    - Cleaned up `CMakeLists.txt` to ensure consistent driver inclusion.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: User to flash and verify if "Sync Error" is resolved. Valid frames are expected in the logs.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 9
+- **Commit**: Pending | **Result**: PENDING PHYSICAL VERIFICATION
+- **Objective**: Fix "Sync Errors" caused by ghost zero frames and rapid wrap-around.
+- **Observations**:
+    - Confirmed real mouse packets were arriving (`0x18`, `0xFF`, `0x00`) but intermixed with `0x00000000` ghost frames.
+    - Identified root cause: PIO program wrapping around while the clock was still Low from the Stop bit, triggering a false frame start.
+    - Updated `ps2_pio_rx.pio` with `wait 1 gpio 3` at the end to ensure the line returns to High/Idle before a new frame can start.
+    - Updated `ps2_pio.c` ISR to drain the FIFO in a loop and explicitly discard `0x00000000` frames.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: User to flash and verify if cursor movement is now smooth and sync errors are gone.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 10
+- **Commit**: Pending | **Result**: PENDING PHYSICAL VERIFICATION
+- **Objective**: Eliminate remaining ghost frames and verify movement smoothness.
+- **Observations**:
+    - Confirmed valid 3-byte packets (`0x28 0xXX 0xYY`) are arriving but intermixed with `0x00000000` causing sync errors.
+    - Updated `ps2_pio_rx.pio` with `[2]` debounce delay to prevent multi-sampling same bit.
+    - Updated `ps2_pio.c` with a distinctive `T10 RAW` log to verify code execution.
+    - Moved noise filtering to the very start of the ISR.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: User to flash and check for `T10 RAW` logs. Valid frames are expected to flow without zero-frame interruptions.
+
+### 2026-01-10 | PIO-Based PS/2 Driver - Physical Test 11
+- **Commit**: Pending | **Result**: ❌ FAIL
+- **Objective**: Verify fix for `PS2 Sync Error` by implementing instant re-sync logic in `zmk_input_mouse_ps2.c`.
+- **Observations**:
+    - The sync error fix works as intended; the driver now recovers gracefully from malformed packets.
+    - The driver is correctly processing PS/2 data and logging `Mouse Packet` events with X/Y values.
+    - **However, the host OS is not showing any cursor movement.** This indicates the data is being lost somewhere between the `zmk_input_mouse_ps2` driver and the USB HID endpoint.
+- **Hardware Status**: PENDING PHYSICAL VERIFICATION
+- **Next Steps**: Investigate the ZMK configuration (`.conf`, `.overlay`) to ensure the pointing device is correctly enabled and routed to the main pointing subsystem.
 
 

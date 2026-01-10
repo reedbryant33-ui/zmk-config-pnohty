@@ -48,44 +48,36 @@ static void ps2_pio_work_handler(struct k_work *work)
 
 static void ps2_pio_isr(void)
 {
-    // Find which device triggered the IRQ (simplified for single instance for now)
-    // In a robust driver, we'd iterate instances or store ISR arg.
     const struct device *dev = DEVICE_DT_INST_GET(0); 
     struct ps2_pio_data *data = dev->data;
     const struct ps2_pio_config *config = dev->config;
     PIO pio = config->pio;
     uint sm = config->sm;
 
-    // Check if RX FIFO is not empty
-    if (!pio_sm_is_rx_fifo_empty(pio, sm)) {
+    while (!pio_sm_is_rx_fifo_empty(pio, sm)) {
         uint32_t rx_raw = pio_sm_get(pio, sm);
         
-        // Process the 11-bit frame: Start(0) + 8 Data + Parity + Stop(1)
-        // Bit 0: Start (should be 0)
-        // Bits 1-8: Data (LSB first)
-        // Bit 9: Parity
-        // Bit 10: Stop (should be 1)
+        // Strict filtering for ghost/noise frames
+        if (rx_raw == 0 || rx_raw == 0xFFFFFFFF) {
+            continue;
+        }
 
-        // With the PIO shifting right (LSB first) and "in pins, 1",
-        // The first bit shifted in is at the LSB of the OSR/ISR?
-        // Wait, "in" shifts into ISR. Default is Shift Right?
-        // Let's assume Shift Right (LSB at bottom).
-        // First bit (Start) -> Bit 0
-        // ...
+        // TEST 10 MARKER - If you see this, you are on the latest code
+        LOG_DBG("T10 RAW: 0x%08x", rx_raw);
         
-        // Actually, let's verify PIO configuration for shift direction.
-        
-        // Extract data byte (bits 1-8)
+        rx_raw >>= 21;
+
+        uint8_t start_bit = (rx_raw >> 0) & 0x01;
         uint8_t byte = (rx_raw >> 1) & 0xFF;
-        
-        // TODO: Parity check
-        
+        uint8_t stop_bit = (rx_raw >> 10) & 0x01;
+
+        if (start_bit != 0 || stop_bit != 1) {
+            continue; // Skip malformed frames
+        }
+
         ring_buf_put(&data->rx_rb, &byte, 1);
         k_work_submit(&data->work);
     }
-    
-    // Clear interrupt flag if set
-    pio_interrupt_clear(pio, 0); 
 }
 
 static int ps2_pio_configure(const struct device *dev, ps2_callback_t callback)
@@ -188,7 +180,6 @@ cleanup:
 
 static int ps2_pio_enable_callback(const struct device *dev)
 {
-    struct ps2_pio_data *data = dev->data;
     const struct ps2_pio_config *config = dev->config;
     
     // Enable PIO SM
@@ -199,7 +190,6 @@ static int ps2_pio_enable_callback(const struct device *dev)
 
 static int ps2_pio_disable_callback(const struct device *dev)
 {
-    struct ps2_pio_data *data = dev->data;
     const struct ps2_pio_config *config = dev->config;
     
     // Disable PIO SM

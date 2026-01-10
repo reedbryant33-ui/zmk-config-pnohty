@@ -1,22 +1,13 @@
-; PS/2 RX PIO Program
-; Based on Research & Implementation Strategy
-
 .program ps2_rx
-; .side_set 0
-
-; Wait for clock low (Start bit)
-; Clock is on pin 0 (relative to configured base)
-; Data is on pin 1 (relative to configured base) or separate input pin
-
-; We use "wait 0 gpio" for clock synchronization
-; The implementation assumes SCL is mapped to the 'wait' pin 
-; and SDA is mapped to the 'in' pin
-
-    wait 0 gpio 3        ; Wait for Clock (GP3) to go LOW (Start condition)
-    set x, 10            ; Loop counter for 11 bits (Start + 8 Data + Parity + Stop)
-
-loop:
-    wait 1 gpio 3        ; Wait for Clock (GP3) to go HIGH (device updates data)
-    in pins, 1           ; Sample Data (GP2)
-    wait 0 gpio 3        ; Wait for Clock (GP3) to go LOW (ready for next bit)
-    jmp x--, loop        ; Loop until all 11 bits are captured
+.wrap_target
+    wait 0 gpio 3        ; Wait for Clock Low (Start bit)
+    in pins, 1           ; Sample Start Bit
+    set x, 9             ; Loop for 10 more bits (8 data + 1 parity + 1 stop)
+bit_loop:
+    wait 1 gpio 3        ; Wait for Clock High
+    wait 0 gpio 3 [2]    ; Wait for Clock Low + 2 cycles debounce
+    in pins, 1           ; Sample bit
+    jmp x--, bit_loop
+    
+    wait 1 gpio 3        ; Wait for Clock to go High (End of frame)
+.wrap

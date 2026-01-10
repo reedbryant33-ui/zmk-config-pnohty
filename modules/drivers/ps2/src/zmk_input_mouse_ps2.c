@@ -33,6 +33,7 @@ static void zmk_input_mouse_ps2_callback(const struct device *ps2_dev, uint8_t b
     // Sync check: Bit 3 of Byte 1 must be 1
     if (data->packet_index == 0 && !(byte & 0x08)) {
         LOG_WRN("PS2 Sync Error: Byte 1 bit 3 not set (%02x)", byte);
+        data->packet_index = 0; // Reset for instant re-sync
         return; 
     }
     
